@@ -1,5 +1,6 @@
 const DEFAULT_FLAGS = {
   pluginsEnabled: true,
+  openclawEnabled: true,
   creativePluginsEnabled: true,
   installExperienceEnabled: true,
   jsonModeEnabled: true,
