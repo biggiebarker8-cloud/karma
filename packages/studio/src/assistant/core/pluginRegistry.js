@@ -8,6 +8,37 @@ export function createPluginRegistry({
 } = {}) {
   const plugins = new Map();
 
+  function getAvailability(pluginId) {
+    const plugin = plugins.get(pluginId);
+    if (!plugin) {
+      return {
+        available: false,
+        reasons: [`Plugin "${pluginId}" is not registered`],
+      };
+    }
+
+    const reasons = [];
+
+    if (plugin.requiredFlag && !isFlagEnabled(featureFlags, plugin.requiredFlag)) {
+      reasons.push(`feature flag "${plugin.requiredFlag}" is disabled`);
+    }
+
+    if (plugin.requiredPermissions?.length) {
+      const missingPermissions = plugin.requiredPermissions.filter(
+        (permission) => !hasPermission(grantedPermissions, permission),
+      );
+
+      if (missingPermissions.length) {
+        reasons.push(`missing permissions: ${missingPermissions.join(', ')}`);
+      }
+    }
+
+    return {
+      available: reasons.length === 0,
+      reasons,
+    };
+  }
+
   return {
     register(plugin) {
       if (!plugin?.id) {
@@ -23,20 +54,7 @@ export function createPluginRegistry({
     },
 
     isAvailable(pluginId) {
-      const plugin = plugins.get(pluginId);
-      if (!plugin) return false;
-
-      if (plugin.requiredFlag && !isFlagEnabled(featureFlags, plugin.requiredFlag)) {
-        return false;
-      }
-
-      if (plugin.requiredPermissions?.length) {
-        return plugin.requiredPermissions.every((permission) =>
-          hasPermission(grantedPermissions, permission),
-        );
-      }
-
-      return true;
+      return getAvailability(pluginId).available;
     },
 
     async execute(pluginId, action, context = {}) {
@@ -45,13 +63,19 @@ export function createPluginRegistry({
         throw new Error(`Plugin "${pluginId}" is not registered`);
       }
 
-      if (!this.isAvailable(pluginId)) {
+      const availability = getAvailability(pluginId);
+      if (!availability.available) {
         auditLogger?.log?.({
           type: 'plugin.blocked',
           pluginId,
-          reason: 'flag_or_permission_denied',
+          reason: availability.reasons.join('; '),
         });
-        throw new Error(`Plugin "${pluginId}" is not available`);
+        const error = new Error(
+          `Plugin "${pluginId}" is not available: ${availability.reasons.join('; ')}`,
+        );
+        error.code = 'PLUGIN_UNAVAILABLE';
+        error.details = availability.reasons;
+        throw error;
       }
 
       auditLogger?.log?.({ type: 'plugin.execute', pluginId, action });
@@ -59,4 +83,3 @@ export function createPluginRegistry({
     },
   };
 }
-
