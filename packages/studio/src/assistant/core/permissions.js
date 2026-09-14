@@ -13,6 +13,7 @@ export const PERMISSIONS = {
   DESIGN_HOODIE: 'design:hoodie',
   DESIGN_COMICS: 'design:comics',
   EDIT_MOVIE_CLIPS: 'edit:movie-clips',
+  INSTALL_GUIDE_READ: 'install-guide:read',
 };
 
 export function hasPermission(grantedPermissions = [], requiredPermission) {

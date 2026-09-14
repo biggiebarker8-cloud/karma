@@ -13,6 +13,7 @@ import { createContinuousLearningStore } from './learning/continuousLearning';
 import { createInternetReferenceRetriever } from './references/internetReferenceRetriever';
 import { getAccessibilityProfile } from './accessibility/accessibilityProfiles';
 import { createVisionAdapter } from './vision/visionAdapter';
+import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor';
 import { createTikTokPlugin } from './plugins/tiktokPlugin';
 import { createFacebookPlugin } from './plugins/facebookPlugin';
 import { createInstagramPlugin } from './plugins/instagramPlugin';
@@ -22,6 +23,7 @@ import { createCanvaPlugin } from './plugins/canvaPlugin';
 import { createHoodieDesignPlugin } from './plugins/hoodieDesignPlugin';
 import { createComicsPlugin } from './plugins/comicsPlugin';
 import { createMovieClipsPlugin } from './plugins/movieClipsPlugin';
+import { createInstallExperiencePlugin } from './plugins/installExperiencePlugin';
 
 export function createAssistantRuntime({
   featureFlagOverrides = {},
@@ -32,6 +34,7 @@ export function createAssistantRuntime({
   imageAnalyzer,
   fetchReferences,
   allowlistDomains = [],
+  installLinks = {},
 }) {
   const auditLogger = createAuditLogger();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
@@ -41,6 +44,12 @@ export function createAssistantRuntime({
   const pluginRegistry = createPluginRegistry({
     featureFlags,
     grantedPermissions: permissions,
+    auditLogger,
+  });
+
+  const installAdvisor = createDesktopInstallAdvisor({
+    appName: 'Karma',
+    installLinks,
     auditLogger,
   });
 
@@ -55,6 +64,10 @@ export function createAssistantRuntime({
     createHoodieDesignPlugin(pluginDeps),
     createComicsPlugin(pluginDeps),
     createMovieClipsPlugin(pluginDeps),
+    createInstallExperiencePlugin({
+      ...pluginDeps,
+      installAdvisor,
+    }),
   ].forEach((plugin) => pluginRegistry.register(plugin));
 
   const modelGateway = createModelGateway({
@@ -102,6 +115,10 @@ export function createAssistantRuntime({
     memoryStore,
     learningStore,
     references,
+    installAdvisor,
+    getDesktopInstallOptions(context = {}) {
+      return installAdvisor.getInstallOptions(context);
+    },
     applyTone(text, profile) {
       return applyToneProfile(text, profile);
     },
