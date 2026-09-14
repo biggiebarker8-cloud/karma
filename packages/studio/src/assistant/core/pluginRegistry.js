@@ -1,5 +1,5 @@
-import { isFlagEnabled } from './featureFlags';
-import { hasPermission } from './permissions';
+import { isFlagEnabled } from './featureFlags.js';
+import { hasPermission } from './permissions.js';
 
 export function createPluginRegistry({
   featureFlags,
