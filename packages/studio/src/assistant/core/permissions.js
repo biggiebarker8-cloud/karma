@@ -9,9 +9,12 @@ export const PERMISSIONS = {
   MEMORY_WRITE: 'memory:write',
   VOICE_INPUT: 'voice:input',
   VOICE_OUTPUT: 'voice:output',
+  IMAGE_READ: 'image:read',
+  DESIGN_HOODIE: 'design:hoodie',
+  DESIGN_COMICS: 'design:comics',
+  EDIT_MOVIE_CLIPS: 'edit:movie-clips',
 };
 
 export function hasPermission(grantedPermissions = [], requiredPermission) {
   return grantedPermissions.includes(requiredPermission);
 }
-

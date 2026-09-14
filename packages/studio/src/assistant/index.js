@@ -12,12 +12,16 @@ import { applyToneProfile } from './tone/toneEngine';
 import { createContinuousLearningStore } from './learning/continuousLearning';
 import { createInternetReferenceRetriever } from './references/internetReferenceRetriever';
 import { getAccessibilityProfile } from './accessibility/accessibilityProfiles';
+import { createVisionAdapter } from './vision/visionAdapter';
 import { createTikTokPlugin } from './plugins/tiktokPlugin';
 import { createFacebookPlugin } from './plugins/facebookPlugin';
 import { createInstagramPlugin } from './plugins/instagramPlugin';
 import { createShopifyPlugin } from './plugins/shopifyPlugin';
 import { createAmazonPlugin } from './plugins/amazonPlugin';
 import { createCanvaPlugin } from './plugins/canvaPlugin';
+import { createHoodieDesignPlugin } from './plugins/hoodieDesignPlugin';
+import { createComicsPlugin } from './plugins/comicsPlugin';
+import { createMovieClipsPlugin } from './plugins/movieClipsPlugin';
 
 export function createAssistantRuntime({
   featureFlagOverrides = {},
@@ -25,6 +29,7 @@ export function createAssistantRuntime({
   modelTransport,
   speechToText,
   textToSpeech,
+  imageAnalyzer,
   fetchReferences,
   allowlistDomains = [],
 }) {
@@ -47,6 +52,9 @@ export function createAssistantRuntime({
     createShopifyPlugin(pluginDeps),
     createAmazonPlugin(pluginDeps),
     createCanvaPlugin(pluginDeps),
+    createHoodieDesignPlugin(pluginDeps),
+    createComicsPlugin(pluginDeps),
+    createMovieClipsPlugin(pluginDeps),
   ].forEach((plugin) => pluginRegistry.register(plugin));
 
   const modelGateway = createModelGateway({
@@ -62,6 +70,12 @@ export function createAssistantRuntime({
 
   const voiceAdapter = createVoiceAdapter({
     textToSpeech,
+    permissionChecker,
+    auditLogger,
+  });
+
+  const visionAdapter = createVisionAdapter({
+    imageAnalyzer,
     permissionChecker,
     auditLogger,
   });
@@ -83,6 +97,7 @@ export function createAssistantRuntime({
     modelGateway,
     hearingAdapter,
     voiceAdapter,
+    visionAdapter,
     turnController,
     memoryStore,
     learningStore,
@@ -96,4 +111,3 @@ export function createAssistantRuntime({
     auditLogger,
   };
 }
-

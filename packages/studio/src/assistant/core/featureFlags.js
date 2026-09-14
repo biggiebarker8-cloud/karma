@@ -1,6 +1,8 @@
 const DEFAULT_FLAGS = {
   pluginsEnabled: true,
+  creativePluginsEnabled: true,
   jsonModeEnabled: true,
+  visionEnabled: true,
   voiceInputEnabled: true,
   voiceOutputEnabled: true,
   memoryEnabled: true,
@@ -19,4 +21,3 @@ export function createFeatureFlags(overrides = {}) {
 export function isFlagEnabled(flags, flagName) {
   return Boolean(flags?.[flagName]);
 }
-
