@@ -3,23 +3,24 @@ import { getMuapiPriceMap } from '../utils/muapiPricing';
 
 export default function ImageStudio() {
   const [priceMap, setPriceMap] = useState(null);
-  const [error, setError] = useState(null);
+  const [pricingStatus, setPricingStatus] = useState('loading');
 
   useEffect(() => {
     const loadPricing = async () => {
       try {
         const prices = await getMuapiPriceMap();
         setPriceMap(prices);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load pricing');
+        setPricingStatus('loaded');
+      } catch {
+        setPricingStatus('unavailable');
       }
     };
 
     loadPricing();
   }, []);
 
-  if (error) {
-    return <div>{error}</div>;
+  if (pricingStatus === 'unavailable') {
+    return <div>Pricing temporarily unavailable</div>;
   }
 
   return <div>{priceMap ? 'Pricing loaded' : 'Loading pricing...'}</div>;
