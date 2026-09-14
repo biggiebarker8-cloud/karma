@@ -58,11 +58,6 @@ export function createPluginRegistry({
     },
 
     async execute(pluginId, action, context = {}) {
-      const plugin = plugins.get(pluginId);
-      if (!plugin) {
-        throw new Error(`Plugin "${pluginId}" is not registered`);
-      }
-
       const availability = getAvailability(pluginId);
       if (!availability.available) {
         auditLogger?.log?.({
@@ -78,6 +73,7 @@ export function createPluginRegistry({
         throw error;
       }
 
+      const plugin = plugins.get(pluginId);
       auditLogger?.log?.({ type: 'plugin.execute', pluginId, action });
       return plugin.execute(action, context);
     },
