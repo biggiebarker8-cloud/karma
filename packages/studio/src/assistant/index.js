@@ -14,6 +14,7 @@ import { createInternetReferenceRetriever } from './references/internetReference
 import { getAccessibilityProfile } from './accessibility/accessibilityProfiles';
 import { createVisionAdapter } from './vision/visionAdapter';
 import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor';
+import { createOpenclawPlugin } from './plugins/openclawPlugin';
 import { createTikTokPlugin } from './plugins/tiktokPlugin';
 import { createFacebookPlugin } from './plugins/facebookPlugin';
 import { createInstagramPlugin } from './plugins/instagramPlugin';
@@ -55,6 +56,7 @@ export function createAssistantRuntime({
 
   const pluginDeps = { rateLimiter, auditLogger };
   [
+    createOpenclawPlugin(pluginDeps),
     createTikTokPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),

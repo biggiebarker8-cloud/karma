@@ -1,4 +1,5 @@
 export const PERMISSIONS = {
+  OPENCLAW_MANAGE: 'openclaw:manage',
   POST_TIKTOK: 'post:tiktok',
   POST_FACEBOOK: 'post:facebook',
   POST_INSTAGRAM: 'post:instagram',
