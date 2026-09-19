@@ -58,7 +58,7 @@ export function createAssistantRuntime({
   const pluginDeps = { rateLimiter, auditLogger };
   [
     createOpenclawPlugin(pluginDeps),
-    createAllianceBotPlugin(),
+    createAllianceBotPlugin(pluginDeps),
     createTikTokPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),
