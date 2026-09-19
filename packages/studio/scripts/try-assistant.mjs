@@ -45,17 +45,17 @@ async function main() {
     },
   });
 
-  const plugin = runtime.pluginRegistry.list().find((candidate) => candidate.id === 'alliance-bot');
+  const plugin = runtime.pluginRegistry.list().find((candidate) => candidate.id === 'openclaw');
   if (!plugin) {
-    throw new Error('Alliance Bot plugin is not registered in the assistant runtime');
+    throw new Error('Openclaw plugin is not registered in the assistant runtime');
   }
 
-  const actionId = 'tiktok-growth-playbook';
-  const result = await runtime.pluginRegistry.execute('alliance-bot', actionId, {
+  const actionId = 'describe-capabilities';
+  const result = await runtime.pluginRegistry.execute('openclaw', actionId, {
     requestedBy: 'local-smoke-test',
   });
 
-  console.log('Alliance Bot is runnable.');
+  console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
   console.log(`Action: ${actionId}`);
   console.log('Result:', JSON.stringify(result, null, 2));
