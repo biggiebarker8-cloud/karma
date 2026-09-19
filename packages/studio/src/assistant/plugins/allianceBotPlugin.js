@@ -61,27 +61,135 @@ const allianceActions = [
   },
 ];
 
+const STANDARD_ACTION_ALLOWLIST = new Set(allianceActions.map((action) => action.id));
+
+const BLOCKED_ACTION_GROUPS = Object.freeze([
+  {
+    id: 'payment-billing',
+    label: 'payment/billing',
+    reason: 'Payment and billing operations require an authorized human admin.',
+    patterns: [/\bpayment\b/i, /\bbilling\b/i, /\binvoice\b/i, /\bcharge\b/i, /\brefund\b/i],
+  },
+  {
+    id: 'admin-privilege-change',
+    label: 'admin-role/ownership/privilege-change',
+    reason: 'Admin role, ownership, and privilege changes require an authorized human admin.',
+    patterns: [
+      /\badmin\b/i,
+      /\bowner(ship)?\b/i,
+      /\bprivilege\b/i,
+      /\bpermission\b/i,
+      /\brole\b/i,
+      /\baccess\b/i,
+    ],
+  },
+]);
+
+function getRequestedBy(context = {}) {
+  return context.requestedBy ?? 'alliance-bot-user';
+}
+
+function resolveDeniedGroup(actionId, context = {}) {
+  const candidates = [
+    actionId,
+    context.requestedAction,
+    context.operation,
+    context.intent,
+    context.request,
+  ].filter((value) => typeof value === 'string' && value.trim());
+
+  return BLOCKED_ACTION_GROUPS.find((group) =>
+    candidates.some((candidate) => group.patterns.some((pattern) => pattern.test(candidate))),
+  );
+}
+
 function buildAllianceResponse(action, context = {}) {
   return {
     actionId: action.id,
     summary: action.description,
-    requestedBy: context.requestedBy ?? 'alliance-bot-user',
+    requestedBy: getRequestedBy(context),
     status: 'ready',
+    operator: {
+      id: 'solutions-consultant',
+      role: 'primary-operator',
+    },
+    accessPolicy: {
+      execution: 'standard-actions-only',
+      canGuideRestrictedActions: true,
+      restrictedGroups: BLOCKED_ACTION_GROUPS.map((group) => group.label),
+    },
   };
 }
 
-export function createAllianceBotPlugin() {
+function buildDeniedResponse(actionId, context = {}, deniedGroup) {
+  const requestedBy = getRequestedBy(context);
+  const requestedAction = context.requestedAction || context.operation || context.intent || actionId;
+
+  return {
+    actionId,
+    requestedAction,
+    requestedBy,
+    status: 'not-permitted',
+    code: 'ALLIANCE_ACTION_NOT_PERMITTED',
+    message: `Not permitted: Solutions Consultant cannot execute ${deniedGroup.label} actions.`,
+    reason: deniedGroup.reason,
+    canGuide: true,
+    canExecute: false,
+    handoff: {
+      requiredRole: 'authorized human admin',
+      instructions: [
+        'Share the requested action with an authorized human admin for execution.',
+        'Include business justification, affected account/workspace, and urgency.',
+        'Request confirmation once the admin completes the operation.',
+      ],
+    },
+  };
+}
+
+export function createAllianceBotPlugin({ auditLogger } = {}) {
   return {
     id: 'alliance-bot',
-    name: 'Alliance Bot',
+    name: 'Solutions Consultant',
     description:
-      'Cross-channel AI solutions consultant for TikTok, Meta, Claude, Amazon, Instagram, Shopify, Wix, Openclaw, Larks, Azure, and Manus workflows.',
+      'Primary AI operator for standard cross-channel workflows with restricted execution for payment/billing and admin privilege changes.',
     actions: allianceActions.map(({ id, title, description }) => ({
       id,
       title,
       description,
     })),
-    async execute(actionId, context) {
+    async execute(actionId, context = {}) {
+      const deniedGroup = resolveDeniedGroup(actionId, context);
+      if (deniedGroup) {
+        const requestedBy = getRequestedBy(context);
+        const requestedAction = context.requestedAction || context.operation || context.intent || actionId;
+
+        auditLogger?.log?.({
+          type: 'alliance.action_denied',
+          actor: requestedBy,
+          actionId,
+          requestedAction,
+          deniedGroup: deniedGroup.id,
+          reason: deniedGroup.reason,
+        });
+
+        return buildDeniedResponse(actionId, context, deniedGroup);
+      }
+
+      if (!STANDARD_ACTION_ALLOWLIST.has(actionId)) {
+        auditLogger?.log?.({
+          type: 'alliance.action_denied',
+          actor: getRequestedBy(context),
+          actionId,
+          requestedAction: actionId,
+          deniedGroup: 'not-allowlisted',
+          reason: 'Only allowlisted standard actions can be executed.',
+        });
+
+        const error = new Error(`Unknown Alliance Bot action: "${actionId}"`);
+        error.code = 'ALLIANCE_ACTION_NOT_FOUND';
+        throw error;
+      }
+
       const action = allianceActions.find((candidate) => candidate.id === actionId);
       if (!action) {
         const error = new Error(`Unknown Alliance Bot action: "${actionId}"`);
