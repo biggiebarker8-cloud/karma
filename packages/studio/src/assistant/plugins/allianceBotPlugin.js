@@ -68,25 +68,37 @@ const BLOCKED_ACTION_GROUPS = Object.freeze([
     id: 'payment-billing',
     label: 'payment/billing',
     reason: 'Payment and billing operations require an authorized human admin.',
-    patterns: [/\bpayment\b/i, /\bbilling\b/i, /\binvoice\b/i, /\bcharge\b/i, /\brefund\b/i],
+    patterns: [
+      /\bpayment(?:s)?\b/i,
+      /\bbilling\b/i,
+      /\binvoice(?:s)?\b/i,
+      /\bcharge(?:s)?\b/i,
+      /\brefund(?:s)?\b/i,
+      /\bcard\s+(?:number|details|on file)\b/i,
+    ],
   },
   {
     id: 'admin-privilege-change',
     label: 'admin-role/ownership/privilege-change',
     reason: 'Admin role, ownership, and privilege changes require an authorized human admin.',
     patterns: [
-      /\badmin\b/i,
-      /\bowner(ship)?\b/i,
-      /\bprivilege\b/i,
-      /\bpermission\b/i,
-      /\brole\b/i,
-      /\baccess\b/i,
+      /\badmin(?:istrator)?\b/i,
+      /\bowner(?:ship)?\b/i,
+      /\bprivilege(?:s)?\b/i,
+      /\bpermission(?:s)?\b/i,
+      /\brole(?:s)?\b/i,
+      /\baccess\s+(?:grant|remove|change|revoke|level)\b/i,
+      /\b(?:grant|remove|change|revoke)\s+access\b/i,
     ],
   },
 ]);
 
 function getRequestedBy(context = {}) {
   return context.requestedBy ?? 'alliance-bot-user';
+}
+
+function getRequestedAction(actionId, context = {}) {
+  return context.requestedAction || context.operation || context.intent || context.request || actionId;
 }
 
 function resolveDeniedGroup(actionId, context = {}) {
@@ -122,13 +134,10 @@ function buildAllianceResponse(action, context = {}) {
 }
 
 function buildDeniedResponse(actionId, context = {}, deniedGroup) {
-  const requestedBy = getRequestedBy(context);
-  const requestedAction = context.requestedAction || context.operation || context.intent || actionId;
-
   return {
     actionId,
-    requestedAction,
-    requestedBy,
+    requestedAction: getRequestedAction(actionId, context),
+    requestedBy: getRequestedBy(context),
     status: 'not-permitted',
     code: 'ALLIANCE_ACTION_NOT_PERMITTED',
     message: `Not permitted: Solutions Consultant cannot execute ${deniedGroup.label} actions.`,
@@ -161,7 +170,7 @@ export function createAllianceBotPlugin({ auditLogger } = {}) {
       const deniedGroup = resolveDeniedGroup(actionId, context);
       if (deniedGroup) {
         const requestedBy = getRequestedBy(context);
-        const requestedAction = context.requestedAction || context.operation || context.intent || actionId;
+        const requestedAction = getRequestedAction(actionId, context);
 
         auditLogger?.log?.({
           type: 'alliance.action_denied',
@@ -180,7 +189,7 @@ export function createAllianceBotPlugin({ auditLogger } = {}) {
           type: 'alliance.action_denied',
           actor: getRequestedBy(context),
           actionId,
-          requestedAction: actionId,
+          requestedAction: getRequestedAction(actionId, context),
           deniedGroup: 'not-allowlisted',
           reason: 'Only allowlisted standard actions can be executed.',
         });
