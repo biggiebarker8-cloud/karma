@@ -15,6 +15,13 @@ Alliance Bot is a cross-channel AI solutions consultant capability that includes
 - Manus
 - AI solutions consulting
 
+## Access policy
+
+- Solutions Consultant is the primary operator for standard allowlisted actions.
+- Payment/billing and admin-role/ownership/privilege-change requests are always blocked from execution, whether expressed as an action ID or request context.
+- Blocked requests return a clear `not-permitted` response with `code: ALLIANCE_ACTION_NOT_PERMITTED`, `canGuide: true`, `canExecute: false`, and handoff instructions for an authorized human admin.
+- Every blocked request is logged as `alliance.action_denied` with actor, action, deny group, reason, and timestamp for auditing.
+
 Implementation file:
 
 - `/home/runner/work/karma/karma/packages/studio/src/assistant/plugins/allianceBotPlugin.js`
