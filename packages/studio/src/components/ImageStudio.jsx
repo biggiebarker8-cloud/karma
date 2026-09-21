@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMuapiPriceMap } from '../utils/muapiPricing';
+import { getMuapiPriceMap } from '../utils/muapiPricing.js';
 
 export default function ImageStudio() {
   const [priceMap, setPriceMap] = useState(null);
