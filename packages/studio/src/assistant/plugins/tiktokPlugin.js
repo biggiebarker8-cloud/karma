@@ -1,4 +1,4 @@
-import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin';
+import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin.js';
 
 export function createTikTokPlugin(deps) {
   return createScopedIntegrationPlugin({
