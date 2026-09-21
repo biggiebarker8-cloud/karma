@@ -1,5 +1,5 @@
-import { parseAndValidateJson } from './jsonMode';
-import { resolveClaudeModel } from './claudeModels';
+import { parseAndValidateJson } from './jsonMode.js';
+import { resolveClaudeModel } from './claudeModels.js';
 
 export function createModelGateway({ transport, auditLogger }) {
   if (typeof transport !== 'function') {

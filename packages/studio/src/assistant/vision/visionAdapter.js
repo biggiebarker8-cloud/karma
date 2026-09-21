@@ -1,5 +1,5 @@
-import { PERMISSIONS } from '../core/permissions';
-import { normalizeImageInput, listSupportedImageFormats } from './imageFormats';
+import { PERMISSIONS } from '../core/permissions.js';
+import { normalizeImageInput, listSupportedImageFormats } from './imageFormats.js';
 
 export function createVisionAdapter({ imageAnalyzer, permissionChecker, auditLogger }) {
   return {
