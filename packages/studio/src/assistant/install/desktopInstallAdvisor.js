@@ -1,4 +1,4 @@
-import { detectDeviceProfile } from './deviceProfiles';
+import { detectDeviceProfile } from './deviceProfiles.js';
 
 const DEFAULT_OPTIONS = {
   ios: {

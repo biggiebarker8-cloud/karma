@@ -1,4 +1,4 @@
-import { resolveApiEndpoint } from './apiResolver';
+import { resolveApiEndpoint } from './apiResolver.js';
 
 const PRICING_RETRY_DELAYS_MS = [250, 750];
 
