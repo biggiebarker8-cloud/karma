@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "test": "node --test",
     "try:assistant": "node --loader ./scripts/js-extension-loader.mjs ./scripts/try-assistant.mjs"
   }
 }
