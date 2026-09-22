@@ -1,5 +1,5 @@
-import { PERMISSIONS } from '../core/permissions';
-import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin';
+import { PERMISSIONS } from '../core/permissions.js';
+import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin.js';
 
 const OPENCLAW_SUPPORTED_ACTIONS = Object.freeze([
   'describe-capabilities',
