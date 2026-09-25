@@ -2,6 +2,7 @@ import { PERMISSIONS } from '../core/permissions';
 import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin';
 import {
   getMicrosoftHubCatalog,
+  getMicrosoftHubPage,
   resolveMicrosoftHubPageId,
 } from '../../microsoft/microsoftHubCatalog';
 
@@ -49,16 +50,19 @@ export function createMicrosoftHubPlugin(deps) {
             })),
           };
         case 'get-page': {
-          const normalizedPageId = resolveMicrosoftHubPageId(context.pageId);
           const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');
+          const supportedAliases = catalog.pages
+            .flatMap((catalogPage) => catalogPage.aliases || [])
+            .join(', ');
+          const normalizedPageId = resolveMicrosoftHubPageId(context.pageId);
+          const page = getMicrosoftHubPage(context.pageId);
 
-          if (!normalizedPageId) {
+          if (!page && !normalizedPageId) {
             throw new Error(
-              `microsoft-hub get-page requires a valid pageId. Supported pages: ${supportedPageIds}`,
+              `microsoft-hub get-page requires a valid pageId. Supported pages: ${supportedPageIds}. Supported aliases: ${supportedAliases}`,
             );
           }
 
-          const page = catalog.pages.find((catalogPage) => catalogPage.id === normalizedPageId);
           if (!page) {
             throw new Error(
               `microsoft-hub page catalog is unavailable for: ${context.pageId}. Supported pages: ${supportedPageIds}`,

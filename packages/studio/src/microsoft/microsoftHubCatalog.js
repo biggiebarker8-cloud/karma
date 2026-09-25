@@ -235,13 +235,30 @@ const HUB_PAGES = Object.freeze([
   },
 ]);
 
-const PAGE_ALIAS_LOOKUP = HUB_PAGES.reduce((lookup, page) => {
-  lookup.set(page.id.toLowerCase(), page.id);
-  if (Array.isArray(page.aliases)) {
-    page.aliases.forEach((alias) => lookup.set(alias.toLowerCase(), page.id));
-  }
+const PAGE_ALIAS_LOOKUP = (() => {
+  const lookup = new Map();
+
+  const registerAlias = (alias, pageId) => {
+    const normalizedAlias = alias.toLowerCase();
+    const existingPageId = lookup.get(normalizedAlias);
+    if (existingPageId && existingPageId !== pageId) {
+      throw new Error(
+        `Duplicate Microsoft hub page alias detected: "${alias}" for "${pageId}" already mapped to "${existingPageId}"`,
+      );
+    }
+
+    lookup.set(normalizedAlias, pageId);
+  };
+
+  HUB_PAGES.forEach((page) => {
+    registerAlias(page.id, page.id);
+    if (Array.isArray(page.aliases)) {
+      page.aliases.forEach((alias) => registerAlias(alias, page.id));
+    }
+  });
+
   return lookup;
-}, new Map());
+})();
 
 const HUB_CATALOG = Object.freeze({
   title: 'Microsoft knowledge base',
