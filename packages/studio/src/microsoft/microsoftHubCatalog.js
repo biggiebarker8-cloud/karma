@@ -1,6 +1,7 @@
 const HUB_PAGES = Object.freeze([
   {
     id: 'products',
+    aliases: ['product', 'products-page'],
     title: 'Products',
     description: 'Core Microsoft products and platforms in one place.',
     cards: [
@@ -56,6 +57,7 @@ const HUB_PAGES = Object.freeze([
   },
   {
     id: 'offers',
+    aliases: ['deals', 'promotions'],
     title: 'Offers',
     description: 'Popular Microsoft commercial and consumer offers.',
     cards: [
@@ -93,6 +95,7 @@ const HUB_PAGES = Object.freeze([
   },
   {
     id: 'partners',
+    aliases: ['partner-programs', 'partners-page'],
     title: 'Partner Programs',
     description: 'Programs and portals for resellers, builders, agencies, and startups.',
     cards: [
@@ -130,6 +133,7 @@ const HUB_PAGES = Object.freeze([
   },
   {
     id: 'learning',
+    aliases: ['learning-resources', 'training'],
     title: 'Learning',
     description: 'Microsoft training, certifications, and product learning hubs.',
     cards: [
@@ -167,6 +171,7 @@ const HUB_PAGES = Object.freeze([
   },
   {
     id: 'apple',
+    aliases: ['apple-ios', 'ios', 'apple-and-ios'],
     title: 'Apple & iOS',
     description: 'Apple-friendly access patterns for Microsoft services.',
     cards: [
@@ -221,5 +226,20 @@ export function getMicrosoftHubCatalog() {
 
 export function getMicrosoftHubPage(pageId = '') {
   const catalog = getMicrosoftHubCatalog();
-  return catalog.pages.find((page) => page.id === pageId) || null;
+  const normalize = (value) =>
+    String(value || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  const normalizedPageId = normalize(pageId);
+
+  return (
+    catalog.pages.find((page) => {
+      const aliases = Array.isArray(page.aliases) ? page.aliases : [];
+      return [page.id, page.title, ...aliases].some(
+        (candidate) => normalize(candidate) === normalizedPageId,
+      );
+    }) || null
+  );
 }

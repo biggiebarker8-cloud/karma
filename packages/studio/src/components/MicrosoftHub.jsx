@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { getMicrosoftHubCatalog } from '../microsoft/microsoftHubCatalog.js';
 
 const styles = {
@@ -81,8 +81,42 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
     ? initialPageId
     : firstPageId;
   const [activePageId, setActivePageId] = useState(initialActivePageId);
+  const tabRefs = useRef({});
   const activePage =
     catalog.pages.find((page) => page.id === activePageId) || catalog.pages[0] || null;
+
+  const focusPageButton = (pageId) => {
+    tabRefs.current[pageId]?.focus?.();
+  };
+
+  const handlePageKeyDown = (event, pageIndex) => {
+    const pageCount = catalog.pages.length;
+    let nextIndex = pageIndex;
+
+    switch (event.key) {
+      case 'ArrowRight':
+      case 'ArrowDown':
+        nextIndex = (pageIndex + 1) % pageCount;
+        break;
+      case 'ArrowLeft':
+      case 'ArrowUp':
+        nextIndex = (pageIndex - 1 + pageCount) % pageCount;
+        break;
+      case 'Home':
+        nextIndex = 0;
+        break;
+      case 'End':
+        nextIndex = pageCount - 1;
+        break;
+      default:
+        return;
+    }
+
+    event.preventDefault();
+    const nextPage = catalog.pages[nextIndex];
+    setActivePageId(nextPage.id);
+    focusPageButton(nextPage.id);
+  };
 
   if (!activePage) {
     return <div>No Microsoft hub pages available.</div>;
@@ -100,24 +134,37 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         <p style={{ margin: 0, lineHeight: 1.6 }}>{catalog.summary}</p>
       </div>
 
-      <nav aria-label="Microsoft hub pages" style={styles.pageNav}>
-        {catalog.pages.map((page) => (
+      <nav aria-label="Microsoft hub pages" role="tablist" style={styles.pageNav}>
+        {catalog.pages.map((page, pageIndex) => (
           <button
             key={page.id}
             type="button"
-            aria-pressed={page.id === activePage.id}
+            role="tab"
+            id={`microsoft-hub-tab-${page.id}`}
+            ref={(element) => {
+              tabRefs.current[page.id] = element;
+            }}
+            aria-selected={page.id === activePage.id}
+            aria-controls={`microsoft-hub-panel-${page.id}`}
+            tabIndex={page.id === activePage.id ? 0 : -1}
             style={{
               ...styles.pageButton,
               ...(page.id === activePage.id ? styles.activePageButton : null),
             }}
             onClick={() => setActivePageId(page.id)}
+            onKeyDown={(event) => handlePageKeyDown(event, pageIndex)}
           >
             {page.title}
           </button>
         ))}
       </nav>
 
-      <div style={styles.pageBody}>
+      <div
+        style={styles.pageBody}
+        role="tabpanel"
+        id={`microsoft-hub-panel-${activePage.id}`}
+        aria-labelledby={`microsoft-hub-tab-${activePage.id}`}
+      >
         <header style={{ marginBottom: '16px' }}>
           <h2 style={{ marginBottom: '8px' }}>{activePage.title}</h2>
           <p style={{ margin: 0, lineHeight: 1.6 }}>{activePage.description}</p>
@@ -133,7 +180,7 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
               <a
                 href={card.href}
                 target="_blank"
-                rel="noreferrer"
+                rel="noopener noreferrer"
                 style={styles.cta}
                 aria-label={`${card.ctaLabel} (opens in a new tab)`}
               >
