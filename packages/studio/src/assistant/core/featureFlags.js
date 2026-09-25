@@ -1,6 +1,7 @@
 const DEFAULT_FLAGS = {
   pluginsEnabled: true,
   openclawEnabled: true,
+  microsoftHubEnabled: true,
   creativePluginsEnabled: true,
   installExperienceEnabled: true,
   jsonModeEnabled: true,

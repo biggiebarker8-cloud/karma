@@ -4,6 +4,7 @@ async function main() {
   const runtime = createAssistantRuntime({
     permissions: [
       'openclaw:manage',
+      'microsoft-hub:read',
       'post:tiktok',
       'post:facebook',
       'post:instagram',
@@ -54,11 +55,18 @@ async function main() {
   const result = await runtime.pluginRegistry.execute('openclaw', actionId, {
     requestedBy: 'local-smoke-test',
   });
+  const microsoftHubPages = await runtime.pluginRegistry.execute('microsoft-hub', 'list-pages', {
+    requestedBy: 'local-smoke-test',
+  });
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
   console.log(`Action: ${actionId}`);
   console.log('Result:', JSON.stringify(result, null, 2));
+  console.log(
+    'Microsoft Hub Pages:',
+    JSON.stringify(microsoftHubPages.pages.map((page) => page.id), null, 2),
+  );
 }
 
 main().catch((error) => {
