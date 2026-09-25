@@ -7,6 +7,9 @@ export function createHearingAdapter({ speechToText, permissionChecker, auditLog
       if (!permissionChecker(PERMISSIONS.VOICE_INPUT)) {
         throw new Error('Voice input permission denied');
       }
+      if (typeof speechToText !== 'function') {
+        throw new Error('Speech-to-text is not configured');
+      }
       auditLogger?.log?.({ type: 'voice.transcribe.start' });
       const text = await speechToText(audioChunk);
       auditLogger?.log?.({ type: 'voice.transcribe.complete' });
@@ -14,4 +17,3 @@ export function createHearingAdapter({ speechToText, permissionChecker, auditLog
     },
   };
 }
-

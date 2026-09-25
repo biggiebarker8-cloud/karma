@@ -74,10 +74,13 @@ export function createAssistantRuntime({
     }),
   ].forEach((plugin) => pluginRegistry.register(plugin));
 
-  const modelGateway = createModelGateway({
-    transport: modelTransport,
-    auditLogger,
-  });
+  const modelGateway =
+    typeof modelTransport === 'function'
+      ? createModelGateway({
+          transport: modelTransport,
+          auditLogger,
+        })
+      : null;
 
   const hearingAdapter = createHearingAdapter({
     speechToText,
@@ -100,13 +103,16 @@ export function createAssistantRuntime({
   const turnController = createTurnController();
   const memoryStore = createMemoryStore({ auditLogger });
   const learningStore = createContinuousLearningStore({ auditLogger });
-  const references = createInternetReferenceRetriever({
-    fetchReferences,
-    permissionChecker,
-    allowlistDomains,
-    requireCitation: true,
-    auditLogger,
-  });
+  const references =
+    typeof fetchReferences === 'function'
+      ? createInternetReferenceRetriever({
+          fetchReferences,
+          permissionChecker,
+          allowlistDomains,
+          requireCitation: true,
+          auditLogger,
+        })
+      : null;
 
   return {
     featureFlags,

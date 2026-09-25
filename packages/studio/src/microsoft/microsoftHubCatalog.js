@@ -385,38 +385,44 @@ const HUB_PAGES = Object.freeze([
   },
 ]);
 
-export function getMicrosoftHubCatalog() {
-  return {
-    id: 'microsoft-hub',
-    title: 'Microsoft Knowledge Base',
+const MICROSOFT_HUB_CATALOG = Object.freeze({
+  id: 'microsoft-hub',
+  title: 'Microsoft Knowledge Base',
+  summary:
+    'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, learning, and Apple-friendly pages.',
+  featuredTopics: Object.freeze([
+    'Microsoft 365',
+    'Dynamics 365',
+    'Power Platform',
+    'Azure',
+    'Microsoft Copilot',
+    'GitHub Copilot',
+    'Visual Studio',
+    'Visual Studio Code',
+    'Microsoft Cloud',
+    'Partner programs',
+    'Microsoft Learn',
+  ]),
+  pages: HUB_PAGES,
+  iosExperience: Object.freeze({
+    title: 'Apple-friendly access',
     summary:
-      'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, learning, and Apple-friendly pages.',
-    featuredTopics: [
-      'Microsoft 365',
-      'Dynamics 365',
-      'Power Platform',
-      'Azure',
-      'Microsoft Copilot',
-      'GitHub Copilot',
-      'Visual Studio',
-      'Visual Studio Code',
-      'Microsoft Cloud',
-      'Partner programs',
-      'Microsoft Learn',
-    ],
-    pages: HUB_PAGES,
-    iosExperience: {
-      title: 'Apple-friendly access',
-      summary: 'Microsoft services can feel smoother on Apple hardware when users start from web-first entry points and lightweight navigation.',
-      installSuggestion: 'Offer Home Screen or bookmarks for frequently used Microsoft web experiences on iOS.',
-      recommendations: HUB_PAGES.find((page) => page.id === 'apple')?.iosRecommendations || [],
-    },
-    knowledgeBaseNotes: [
-      'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
-      'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
-      'Business, cloud, Copilot, and developer sections highlight Microsoft commercial workloads, AI tools, and Visual Studio resources.',
-    ],
-  };
+      'Microsoft services can feel smoother on Apple hardware when users start from web-first entry points and lightweight navigation.',
+    installSuggestion:
+      'Offer Home Screen or bookmarks for frequently used Microsoft web experiences on iOS.',
+    recommendations: Object.freeze(
+      HUB_PAGES.find((page) => page.id === 'apple')?.iosRecommendations || [],
+    ),
+  }),
+  knowledgeBaseNotes: Object.freeze([
+    'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
+    'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
+    'Business, cloud, Copilot, and developer sections highlight Microsoft commercial workloads, AI tools, and Visual Studio resources.',
+  ]),
+});
+
+export function getMicrosoftHubCatalog() {
+  return MICROSOFT_HUB_CATALOG;
 }
 
 export function getMicrosoftHubPage(pageId = '') {
