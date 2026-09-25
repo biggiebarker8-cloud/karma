@@ -50,13 +50,13 @@ export function createMicrosoftHubPlugin(deps) {
           };
         case 'get-page': {
           if (!context.pageId) {
-            throw new Error('microsoft-hub get-page requires a pageId');
+            throw new Error('microsoft-hub get-page requires context.pageId to identify a hub page');
           }
           const page = getMicrosoftHubPage(context.pageId);
           if (!page) {
             const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');
             throw new Error(
-              `Unsupported microsoft-hub page: ${context.pageId}. Supported pages: ${supportedPageIds}`,
+              `Unsupported microsoft-hub page: ${context.pageId}. Supported canonical page ids: ${supportedPageIds}. Aliases and page titles are also accepted.`,
             );
           }
           return {

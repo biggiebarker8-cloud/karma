@@ -159,29 +159,35 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         </div>
       </div>
 
-      <nav aria-label="Microsoft hub pages" role="tablist" style={styles.pageNav}>
-        {catalog.pages.map((page, pageIndex) => (
-          <button
-            key={page.id}
-            type="button"
-            role="tab"
-            id={`microsoft-hub-tab-${page.id}`}
-            ref={(element) => {
-              tabRefs.current[page.id] = element;
-            }}
-            aria-selected={page.id === activePage.id}
-            aria-controls={`microsoft-hub-panel-${page.id}`}
-            tabIndex={page.id === activePage.id ? 0 : -1}
-            style={{
-              ...styles.pageButton,
-              ...(page.id === activePage.id ? styles.activePageButton : null),
-            }}
-            onClick={() => setActivePageId(page.id)}
-            onKeyDown={(event) => handlePageKeyDown(event, pageIndex)}
-          >
-            {page.title}
-          </button>
-        ))}
+      <nav aria-label="Microsoft hub pages">
+        <div role="tablist" style={styles.pageNav}>
+          {catalog.pages.map((page, pageIndex) => (
+            <button
+              key={page.id}
+              type="button"
+              role="tab"
+              id={`microsoft-hub-tab-${page.id}`}
+              ref={(element) => {
+                if (element) {
+                  tabRefs.current[page.id] = element;
+                } else {
+                  delete tabRefs.current[page.id];
+                }
+              }}
+              aria-selected={page.id === activePage.id}
+              aria-controls={`microsoft-hub-panel-${page.id}`}
+              tabIndex={page.id === activePage.id ? 0 : -1}
+              style={{
+                ...styles.pageButton,
+                ...(page.id === activePage.id ? styles.activePageButton : null),
+              }}
+              onClick={() => setActivePageId(page.id)}
+              onKeyDown={(event) => handlePageKeyDown(event, pageIndex)}
+            >
+              {page.title}
+            </button>
+          ))}
+        </div>
       </nav>
 
       <div
@@ -189,6 +195,7 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         role="tabpanel"
         id={`microsoft-hub-panel-${activePage.id}`}
         aria-labelledby={`microsoft-hub-tab-${activePage.id}`}
+        tabIndex={0}
       >
         <header style={{ marginBottom: '16px' }}>
           <h2 style={{ marginBottom: '8px' }}>{activePage.title}</h2>

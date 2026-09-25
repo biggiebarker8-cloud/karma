@@ -8,8 +8,73 @@ function getRequiredPlugin(runtime, pluginId, label) {
   return plugin;
 }
 
+async function expectPluginUnavailable(runtime, pluginId, actionId, expectedReason) {
+  try {
+    await runtime.pluginRegistry.execute(pluginId, actionId, {
+      requestedBy: 'local-smoke-test',
+    });
+  } catch (error) {
+    if (error?.code !== 'PLUGIN_UNAVAILABLE') {
+      throw error;
+    }
+    if (!error.details?.some((detail) => detail.includes(expectedReason))) {
+      throw new Error(
+        `Expected ${pluginId} to be unavailable because "${expectedReason}", got: ${error.details?.join('; ')}`,
+      );
+    }
+    return;
+  }
+
+  throw new Error(`Expected ${pluginId} to be unavailable for action ${actionId}`);
+}
+
 async function main() {
+  const runtimeConfig = {
+    modelTransport: async () => 'ok',
+    speechToText: async () => 'stub transcript',
+    textToSpeech: async () => new Uint8Array(),
+    imageAnalyzer: async () => ({ labels: [] }),
+    fetchReferences: async () => [],
+    installLinks: {
+      windows: 'https://example.com/windows',
+      macos: 'https://example.com/macos',
+      android: 'https://example.com/android',
+      ios: 'https://example.com/ios',
+    },
+  };
+
+  const disabledMicrosoftRuntime = createAssistantRuntime({
+    ...runtimeConfig,
+    permissions: ['microsoft-hub:read'],
+    featureFlagOverrides: {
+      pluginsEnabled: true,
+      microsoftHubEnabled: false,
+    },
+  });
+  await expectPluginUnavailable(
+    disabledMicrosoftRuntime,
+    'microsoft-hub',
+    'list-pages',
+    'feature flag "microsoftHubEnabled" is disabled',
+  );
+
+  const unauthorizedMicrosoftRuntime = createAssistantRuntime({
+    ...runtimeConfig,
+    permissions: [],
+    featureFlagOverrides: {
+      pluginsEnabled: true,
+      microsoftHubEnabled: true,
+    },
+  });
+  await expectPluginUnavailable(
+    unauthorizedMicrosoftRuntime,
+    'microsoft-hub',
+    'list-pages',
+    'missing permissions: microsoft-hub:read',
+  );
+
   const runtime = createAssistantRuntime({
+    ...runtimeConfig,
     permissions: [
       'openclaw:manage',
       'microsoft-hub:read',
@@ -41,17 +106,6 @@ async function main() {
       visionEnabled: true,
       memoryEnabled: true,
       continuousLearningEnabled: true,
-    },
-    modelTransport: async () => 'ok',
-    speechToText: async () => 'stub transcript',
-    textToSpeech: async () => new Uint8Array(),
-    imageAnalyzer: async () => ({ labels: [] }),
-    fetchReferences: async () => [],
-    installLinks: {
-      windows: 'https://example.com/windows',
-      macos: 'https://example.com/macos',
-      android: 'https://example.com/android',
-      ios: 'https://example.com/ios',
     },
   });
 
