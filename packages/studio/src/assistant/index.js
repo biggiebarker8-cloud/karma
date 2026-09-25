@@ -1,31 +1,31 @@
-import { createFeatureFlags } from './core/featureFlags';
-import { createPluginRegistry } from './core/pluginRegistry';
-import { createRateLimiter } from './core/rateLimiter';
-import { createAuditLogger } from './core/auditLogger';
-import { hasPermission } from './core/permissions';
-import { createModelGateway } from './model/modelGateway';
-import { createHearingAdapter } from './voice/hearingAdapter';
-import { createVoiceAdapter } from './voice/voiceAdapter';
-import { createTurnController } from './voice/turnControls';
-import { createMemoryStore } from './memory/memoryStore';
-import { applyToneProfile } from './tone/toneEngine';
-import { createContinuousLearningStore } from './learning/continuousLearning';
-import { createInternetReferenceRetriever } from './references/internetReferenceRetriever';
-import { getAccessibilityProfile } from './accessibility/accessibilityProfiles';
-import { createVisionAdapter } from './vision/visionAdapter';
-import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor';
-import { createOpenclawPlugin } from './plugins/openclawPlugin';
-import { createAllianceBotPlugin } from './plugins/allianceBotPlugin';
-import { createTikTokPlugin } from './plugins/tiktokPlugin';
-import { createFacebookPlugin } from './plugins/facebookPlugin';
-import { createInstagramPlugin } from './plugins/instagramPlugin';
-import { createShopifyPlugin } from './plugins/shopifyPlugin';
-import { createAmazonPlugin } from './plugins/amazonPlugin';
-import { createCanvaPlugin } from './plugins/canvaPlugin';
-import { createHoodieDesignPlugin } from './plugins/hoodieDesignPlugin';
-import { createComicsPlugin } from './plugins/comicsPlugin';
-import { createMovieClipsPlugin } from './plugins/movieClipsPlugin';
-import { createInstallExperiencePlugin } from './plugins/installExperiencePlugin';
+import { createFeatureFlags } from './core/featureFlags.js';
+import { createPluginRegistry } from './core/pluginRegistry.js';
+import { createRateLimiter } from './core/rateLimiter.js';
+import { createAuditLogger } from './core/auditLogger.js';
+import { hasPermission } from './core/permissions.js';
+import { createModelGateway } from './model/modelGateway.js';
+import { createHearingAdapter } from './voice/hearingAdapter.js';
+import { createVoiceAdapter } from './voice/voiceAdapter.js';
+import { createTurnController } from './voice/turnControls.js';
+import { createMemoryStore } from './memory/memoryStore.js';
+import { applyToneProfile } from './tone/toneEngine.js';
+import { createContinuousLearningStore } from './learning/continuousLearning.js';
+import { createInternetReferenceRetriever } from './references/internetReferenceRetriever.js';
+import { getAccessibilityProfile } from './accessibility/accessibilityProfiles.js';
+import { createVisionAdapter } from './vision/visionAdapter.js';
+import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor.js';
+import { createOpenclawPlugin } from './plugins/openclawPlugin.js';
+import { createMicrosoftHubPlugin } from './plugins/microsoftHubPlugin.js';
+import { createTikTokPlugin } from './plugins/tiktokPlugin.js';
+import { createFacebookPlugin } from './plugins/facebookPlugin.js';
+import { createInstagramPlugin } from './plugins/instagramPlugin.js';
+import { createShopifyPlugin } from './plugins/shopifyPlugin.js';
+import { createAmazonPlugin } from './plugins/amazonPlugin.js';
+import { createCanvaPlugin } from './plugins/canvaPlugin.js';
+import { createHoodieDesignPlugin } from './plugins/hoodieDesignPlugin.js';
+import { createComicsPlugin } from './plugins/comicsPlugin.js';
+import { createMovieClipsPlugin } from './plugins/movieClipsPlugin.js';
+import { createInstallExperiencePlugin } from './plugins/installExperiencePlugin.js';
 
 export function createAssistantRuntime({
   featureFlagOverrides = {},
@@ -58,7 +58,7 @@ export function createAssistantRuntime({
   const pluginDeps = { rateLimiter, auditLogger };
   [
     createOpenclawPlugin(pluginDeps),
-    createAllianceBotPlugin(pluginDeps),
+    createMicrosoftHubPlugin(pluginDeps),
     createTikTokPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),

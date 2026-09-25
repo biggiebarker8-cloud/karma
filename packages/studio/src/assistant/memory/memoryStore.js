@@ -12,10 +12,10 @@ export function createMemoryStore({ retentionMs = DEFAULT_RETENTION_MS, auditLog
   };
 
   function compact(scope) {
-    const ttl = retentionMs[scope];
-    if (!ttl) return;
+    const ttl = retentionMs?.[scope];
+    if (typeof ttl !== 'number' || !Number.isFinite(ttl) || ttl < 0) return;
     const threshold = Date.now() - ttl;
-    memory[scope] = memory[scope].filter((entry) => entry.createdAt >= threshold);
+    memory[scope] = memory[scope].filter((entry) => entry.createdAt > threshold);
   }
 
   return {
@@ -39,4 +39,3 @@ export function createMemoryStore({ retentionMs = DEFAULT_RETENTION_MS, auditLog
     },
   };
 }
-

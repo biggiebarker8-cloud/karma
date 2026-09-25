@@ -1,4 +1,4 @@
-import { PERMISSIONS } from '../core/permissions';
+import { PERMISSIONS } from '../core/permissions.js';
 
 export function createVoiceAdapter({ textToSpeech, permissionChecker, auditLogger }) {
   return {
