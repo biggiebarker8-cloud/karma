@@ -3,6 +3,7 @@ import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin';
 import {
   getMicrosoftHubCatalog,
   getMicrosoftHubPage,
+  resolveMicrosoftHubPageId,
 } from '../../microsoft/microsoftHubCatalog';
 
 const MICROSOFT_HUB_SUPPORTED_ACTIONS = Object.freeze([
@@ -49,13 +50,17 @@ export function createMicrosoftHubPlugin(deps) {
             })),
           };
         case 'get-page': {
-          if (!context.pageId) {
-            throw new Error('microsoft-hub get-page requires a pageId');
+          const normalizedPageId = resolveMicrosoftHubPageId(context.pageId);
+          const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');
+
+          if (!normalizedPageId) {
+            throw new Error(
+              `microsoft-hub get-page requires a valid pageId. Supported pages: ${supportedPageIds}`,
+            );
           }
 
-          const page = getMicrosoftHubPage(context.pageId);
+          const page = getMicrosoftHubPage(normalizedPageId);
           if (!page) {
-            const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');
             throw new Error(
               `Unsupported microsoft-hub page: ${context.pageId}. Supported pages: ${supportedPageIds}`,
             );

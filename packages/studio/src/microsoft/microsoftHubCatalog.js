@@ -285,12 +285,16 @@ function normalizePageId(pageId) {
   return PAGE_ALIAS_LOOKUP.get(normalized) || null;
 }
 
+export function resolveMicrosoftHubPageId(pageId) {
+  return normalizePageId(pageId);
+}
+
 export function getMicrosoftHubCatalog() {
   return HUB_CATALOG;
 }
 
 export function getMicrosoftHubPage(pageId) {
-  const normalizedPageId = normalizePageId(pageId);
+  const normalizedPageId = resolveMicrosoftHubPageId(pageId);
   if (!normalizedPageId) {
     return null;
   }
