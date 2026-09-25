@@ -59,6 +59,10 @@ async function main() {
   const microsoftHubPages = await runtime.pluginRegistry.execute('microsoft-hub', 'list-pages', {
     requestedBy: 'local-smoke-test',
   });
+  const cloudPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
+    requestedBy: 'local-smoke-test',
+    pageId: 'cloud',
+  });
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
@@ -68,6 +72,7 @@ async function main() {
     'Microsoft Hub Pages:',
     JSON.stringify(microsoftHubPages.pages.map((page) => page.id), null, 2),
   );
+  console.log('Microsoft Cloud Page:', cloudPage.page.title, cloudPage.page.cards.length);
 }
 
 main().catch((error) => {

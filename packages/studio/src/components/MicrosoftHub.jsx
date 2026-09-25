@@ -15,6 +15,21 @@ const styles = {
     padding: '20px',
     marginBottom: '16px',
   },
+  tagRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '8px',
+    marginTop: '14px',
+  },
+  tag: {
+    background: '#ffffff',
+    border: '1px solid #c7d2fe',
+    borderRadius: '999px',
+    color: '#4338ca',
+    fontSize: '0.875rem',
+    fontWeight: 600,
+    padding: '6px 10px',
+  },
   pageNav: {
     display: 'flex',
     gap: '8px',
@@ -72,6 +87,12 @@ const styles = {
     borderRadius: '16px',
     padding: '16px',
   },
+  notesBox: {
+    marginTop: '16px',
+    background: '#eef2ff',
+    borderRadius: '16px',
+    padding: '16px',
+  },
 };
 
 export default function MicrosoftHub({ initialPageId = 'products' }) {
@@ -124,12 +145,19 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
     <section style={styles.shell}>
       <div style={styles.hero}>
         <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 700, color: '#4338ca' }}>
-          Microsoft Hub
+          Microsoft knowledge base
         </p>
         <h1 style={{ margin: '8px 0 12px', fontSize: 'clamp(1.75rem, 4vw, 2.5rem)' }}>
-          Microsoft products, offers, partner programs, and learning in one place
+          Microsoft business, cloud, products, offers, partner programs, and learning in one place
         </h1>
         <p style={{ margin: 0, lineHeight: 1.6 }}>{catalog.summary}</p>
+        <div style={styles.tagRow} aria-label="Featured Microsoft topics">
+          {catalog.featuredTopics.map((topic) => (
+            <span key={topic} style={styles.tag}>
+              {topic}
+            </span>
+          ))}
+        </div>
       </div>
 
       <nav aria-label="Microsoft hub pages" role="tablist" style={styles.pageNav}>
@@ -202,6 +230,15 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
             </ul>
           </aside>
         ) : null}
+
+        <aside style={styles.notesBox}>
+          <h3 style={{ marginTop: 0 }}>Knowledge base notes</h3>
+          <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: 1.7 }}>
+            {catalog.knowledgeBaseNotes.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </aside>
       </div>
     </section>
   );

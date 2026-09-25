@@ -56,6 +56,94 @@ const HUB_PAGES = Object.freeze([
     ],
   },
   {
+    id: 'business',
+    aliases: ['business-apps', 'business', 'business-solutions'],
+    title: 'Business',
+    description: 'Business applications, workplace tools, and commercial productivity solutions.',
+    cards: [
+      {
+        title: 'Microsoft 365 for business',
+        summary: 'Commercial plans for email, collaboration, security, device management, and Copilot at work.',
+        href: 'https://www.microsoft.com/en-us/microsoft-365/business',
+        ctaLabel: 'See business plans',
+      },
+      {
+        title: 'Dynamics 365',
+        summary: 'CRM and ERP workloads for sales, service, finance, operations, and commerce teams.',
+        href: 'https://www.microsoft.com/en-us/dynamics-365',
+        ctaLabel: 'Explore Dynamics 365',
+      },
+      {
+        title: 'Power Platform',
+        summary: 'Low-code app building, workflow automation, analytics, agents, and websites.',
+        href: 'https://www.microsoft.com/en-us/power-platform',
+        ctaLabel: 'Open Power Platform',
+      },
+      {
+        title: 'Teams for business',
+        summary: 'Meetings, calling, frontline coordination, chat, and collaborative workspaces.',
+        href: 'https://www.microsoft.com/en-us/microsoft-teams/small-medium-business',
+        ctaLabel: 'View Teams business',
+      },
+      {
+        title: 'Microsoft Viva',
+        summary: 'Employee experience, learning, communications, goals, and knowledge tools.',
+        href: 'https://www.microsoft.com/en-us/microsoft-viva',
+        ctaLabel: 'See Viva',
+      },
+      {
+        title: 'Business decision makers hub',
+        summary: 'Commercial solution guidance across security, AI, productivity, and cloud transformation.',
+        href: 'https://www.microsoft.com/en-us/business',
+        ctaLabel: 'Visit Microsoft Business',
+      },
+    ],
+  },
+  {
+    id: 'cloud',
+    aliases: ['azure-cloud', 'cloud-platform', 'azure'],
+    title: 'Cloud',
+    description: 'Cloud infrastructure, AI, data, security, and developer services across Microsoft Cloud.',
+    cards: [
+      {
+        title: 'Azure',
+        summary: 'Core cloud platform for compute, networking, storage, app services, and operations.',
+        href: 'https://azure.microsoft.com/',
+        ctaLabel: 'Open Azure',
+      },
+      {
+        title: 'Azure AI',
+        summary: 'Azure AI services, machine learning, AI Studio, and enterprise AI deployment guidance.',
+        href: 'https://azure.microsoft.com/en-us/products/ai-services',
+        ctaLabel: 'Explore Azure AI',
+      },
+      {
+        title: 'Azure architecture center',
+        summary: 'Reference architectures, solution ideas, and best-practice cloud design guidance.',
+        href: 'https://learn.microsoft.com/en-us/azure/architecture/',
+        ctaLabel: 'Read architecture guidance',
+      },
+      {
+        title: 'Azure pricing and offers',
+        summary: 'Cloud pricing, calculators, free services, and commercial offer details.',
+        href: 'https://azure.microsoft.com/en-us/pricing/',
+        ctaLabel: 'View Azure pricing',
+      },
+      {
+        title: 'Microsoft Cloud for industries',
+        summary: 'Industry clouds for healthcare, retail, nonprofit, financial services, and more.',
+        href: 'https://www.microsoft.com/en-us/industry',
+        ctaLabel: 'Browse industry clouds',
+      },
+      {
+        title: 'Azure training',
+        summary: 'Cloud, AI, data, and infrastructure learning paths for architects, admins, and developers.',
+        href: 'https://learn.microsoft.com/en-us/training/azure/',
+        ctaLabel: 'Start Azure learning',
+      },
+    ],
+  },
+  {
     id: 'offers',
     aliases: ['deals', 'promotions'],
     title: 'Offers',
@@ -212,8 +300,19 @@ const HUB_PAGES = Object.freeze([
 export function getMicrosoftHubCatalog() {
   return {
     id: 'microsoft-hub',
-    title: 'Microsoft Hub',
-    summary: 'A curated Microsoft directory with product, offer, partner, learning, and Apple-friendly pages.',
+    title: 'Microsoft Knowledge Base',
+    summary:
+      'A curated Microsoft knowledge base with business, cloud, product, offer, partner, learning, and Apple-friendly pages.',
+    featuredTopics: [
+      'Microsoft 365',
+      'Dynamics 365',
+      'Power Platform',
+      'Azure',
+      'Azure AI',
+      'Microsoft Cloud',
+      'Partner programs',
+      'Microsoft Learn',
+    ],
     pages: HUB_PAGES,
     iosExperience: {
       title: 'Apple-friendly access',
@@ -221,6 +320,11 @@ export function getMicrosoftHubCatalog() {
       installSuggestion: 'Offer Home Screen or bookmarks for frequently used Microsoft web experiences on iOS.',
       recommendations: HUB_PAGES.find((page) => page.id === 'apple')?.iosRecommendations || [],
     },
+    knowledgeBaseNotes: [
+      'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
+      'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
+      'Business and cloud sections highlight Microsoft commercial workloads and Azure-first architecture resources.',
+    ],
   };
 }
 
