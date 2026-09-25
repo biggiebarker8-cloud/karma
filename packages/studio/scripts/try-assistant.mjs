@@ -51,6 +51,13 @@ async function main() {
   if (!plugin) {
     throw new Error('Openclaw plugin is not registered in the assistant runtime');
   }
+  const microsoftHubPlugin = runtime
+    .pluginRegistry
+    .list()
+    .find((candidate) => candidate.id === 'microsoft-hub');
+  if (!microsoftHubPlugin) {
+    throw new Error('Microsoft Hub plugin is not registered in the assistant runtime');
+  }
 
   const actionId = 'describe-capabilities';
   const result = await runtime.pluginRegistry.execute('openclaw', actionId, {
@@ -78,6 +85,7 @@ async function main() {
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
+  console.log(`Microsoft Hub Plugin: ${microsoftHubPlugin.id}`);
   console.log(`Action: ${actionId}`);
   console.log('Result:', JSON.stringify(result, null, 2));
   console.log(
