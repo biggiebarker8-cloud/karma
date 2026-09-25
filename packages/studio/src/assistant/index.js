@@ -16,6 +16,7 @@ import { createVisionAdapter } from './vision/visionAdapter';
 import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor';
 import { createOpenclawPlugin } from './plugins/openclawPlugin';
 import { createAllianceBotPlugin } from './plugins/allianceBotPlugin';
+import { createMicrosoftHubPlugin } from './plugins/microsoftHubPlugin';
 import { createTikTokPlugin } from './plugins/tiktokPlugin';
 import { createFacebookPlugin } from './plugins/facebookPlugin';
 import { createInstagramPlugin } from './plugins/instagramPlugin';
@@ -59,6 +60,7 @@ export function createAssistantRuntime({
   [
     createOpenclawPlugin(pluginDeps),
     createAllianceBotPlugin(pluginDeps),
+    createMicrosoftHubPlugin(pluginDeps),
     createTikTokPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),
