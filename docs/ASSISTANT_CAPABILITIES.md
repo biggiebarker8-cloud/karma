@@ -7,7 +7,7 @@ This repository now includes a foundation for:
 - Voice/hearing adapters and turn controls (pause, interrupt, confirm)
 - Vision adapter with multi-format image normalization and validation
 - Integration plugin connectors for Openclaw, TikTok, Facebook, Instagram, Shopify, Amazon, and Canva
-- Microsoft hub capability with curated Copilot, business, cloud, developer/visual suite, product, offer, partner, learning, and Apple-friendly pages
+- Microsoft hub capability with curated Copilot, business, cloud, developer/visual suite, product, offer, partner, contact, learning, and Apple-friendly pages
 - Creative plugins for hoodie design, comics, and movie clip workflows
 - Cross-device desktop install advisor and install plugin for iOS/Android/desktop paths
 - Memory scopes (session/user/task), tone profiles, and accessibility profiles
@@ -26,4 +26,4 @@ This repository now includes a foundation for:
 - Creative and vision capabilities are dependency-injected so production analyzers/providers can be wired safely.
 - Network/OAuth-specific implementations are intentionally dependency-injected for secure wiring in app-specific runtime code.
 - iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install.
-- The Microsoft hub acts as a curated Microsoft knowledge base, including Copilot, business, cloud, and developer/visual suite sections plus official Microsoft links and Apple-friendly web-first guidance for iPhone, iPad, and Mac users.
+- The Microsoft hub acts as a curated Microsoft knowledge base, including Copilot, business, cloud, contact/support, and developer/visual suite sections plus official Microsoft links and Apple-friendly web-first guidance for iPhone, iPad, and Mac users.

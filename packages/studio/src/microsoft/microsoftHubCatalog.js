@@ -264,6 +264,50 @@ const HUB_PAGES = Object.freeze([
     ],
   },
   {
+    id: 'contact',
+    aliases: ['contacts', 'support', 'support-page', 'microsoft-contact-details'],
+    title: 'Contact Microsoft',
+    description: 'Official Microsoft contact entry points for support, sales, accessibility, and partner help.',
+    cards: [
+      {
+        title: 'Microsoft Support',
+        summary: 'Get help for Microsoft 365, Windows, Office, Xbox, Surface, billing, and account issues.',
+        href: 'https://support.microsoft.com/contactus',
+        ctaLabel: 'Open Microsoft Support',
+      },
+      {
+        title: 'Contact Microsoft Sales',
+        summary: 'Reach Microsoft sales teams for cloud, security, Copilot, and commercial solution inquiries.',
+        href: 'https://www.microsoft.com/en-us/microsoft-cloud/contact-sales',
+        ctaLabel: 'Contact sales',
+      },
+      {
+        title: 'Azure support options',
+        summary: 'Review Azure technical support plans, billing help, and support request entry points.',
+        href: 'https://azure.microsoft.com/en-us/support/options/',
+        ctaLabel: 'View Azure support',
+      },
+      {
+        title: 'Accessibility support',
+        summary: 'Find disability answer desk resources, accessibility help, and inclusive product support.',
+        href: 'https://www.microsoft.com/en-us/accessibility/disability-answer-desk',
+        ctaLabel: 'Get accessibility help',
+      },
+      {
+        title: 'Microsoft Store support',
+        summary: 'Get help with Microsoft Store orders, subscriptions, devices, returns, and payment issues.',
+        href: 'https://support.microsoft.com/microsoft-store-and-billing',
+        ctaLabel: 'Open Store support',
+      },
+      {
+        title: 'Partner support',
+        summary: 'Access Partner Center help, support requests, and partner program assistance resources.',
+        href: 'https://partner.microsoft.com/en-us/support',
+        ctaLabel: 'Open partner support',
+      },
+    ],
+  },
+  {
     id: 'developer',
     aliases: ['developers', 'visual-suite', 'visual-studio-suite', 'dev-tools'],
     title: 'Developer & Visual Suite',
@@ -390,7 +434,7 @@ export function getMicrosoftHubCatalog() {
     id: 'microsoft-hub',
     title: 'Microsoft Knowledge Base',
     summary:
-      'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, learning, and Apple-friendly pages.',
+      'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, contact, learning, and Apple-friendly pages.',
     featuredTopics: [
       'Microsoft 365',
       'Dynamics 365',
@@ -401,6 +445,7 @@ export function getMicrosoftHubCatalog() {
       'Visual Studio',
       'Visual Studio Code',
       'Microsoft Cloud',
+      'Microsoft Support',
       'Partner programs',
       'Microsoft Learn',
     ],
@@ -414,7 +459,7 @@ export function getMicrosoftHubCatalog() {
     knowledgeBaseNotes: [
       'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
       'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
-      'Business, cloud, Copilot, and developer sections highlight Microsoft commercial workloads, AI tools, and Visual Studio resources.',
+      'Business, cloud, Copilot, contact, and developer sections highlight Microsoft commercial workloads, support paths, AI tools, and Visual Studio resources.',
     ],
   };
 }
