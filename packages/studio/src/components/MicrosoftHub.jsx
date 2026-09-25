@@ -95,11 +95,9 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
 
     switch (event.key) {
       case 'ArrowRight':
-      case 'ArrowDown':
         nextIndex = (pageIndex + 1) % pageCount;
         break;
       case 'ArrowLeft':
-      case 'ArrowUp':
         nextIndex = (pageIndex - 1 + pageCount) % pageCount;
         break;
       case 'Home':
