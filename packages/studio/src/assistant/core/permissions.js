@@ -6,6 +6,7 @@ export const PERMISSIONS = {
   SHOPIFY_WRITE: 'shopify:write',
   AMAZON_WRITE: 'amazon:write',
   CANVA_WRITE: 'canva:write',
+  MICROSOFT_HUB_READ: 'microsoft-hub:read',
   INTERNET_READ: 'internet:read',
   MEMORY_WRITE: 'memory:write',
   VOICE_INPUT: 'voice:input',

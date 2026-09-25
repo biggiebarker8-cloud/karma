@@ -15,6 +15,7 @@ import { getAccessibilityProfile } from './accessibility/accessibilityProfiles.j
 import { createVisionAdapter } from './vision/visionAdapter.js';
 import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor.js';
 import { createOpenclawPlugin } from './plugins/openclawPlugin.js';
+import { createMicrosoftHubPlugin } from './plugins/microsoftHubPlugin.js';
 import { createTikTokPlugin } from './plugins/tiktokPlugin.js';
 import { createFacebookPlugin } from './plugins/facebookPlugin.js';
 import { createInstagramPlugin } from './plugins/instagramPlugin.js';
@@ -57,6 +58,7 @@ export function createAssistantRuntime({
   const pluginDeps = { rateLimiter, auditLogger };
   [
     createOpenclawPlugin(pluginDeps),
+    createMicrosoftHubPlugin(pluginDeps),
     createTikTokPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),
