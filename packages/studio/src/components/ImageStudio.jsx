@@ -1,35 +1,7 @@
-import { useEffect, useState } from 'react';
-import { getMuapiPriceMap } from '../utils/muapiPricing.js';
+import { useMuapiPricing } from './useMuapiPricing.js';
 
 export default function ImageStudio() {
-  const [priceMap, setPriceMap] = useState(null);
-  const [pricingStatus, setPricingStatus] = useState('loading');
-
-  useEffect(() => {
-    let isActive = true;
-
-    const loadPricing = async () => {
-      try {
-        const prices = await getMuapiPriceMap();
-        if (!isActive) {
-          return;
-        }
-        setPriceMap(prices);
-        setPricingStatus('loaded');
-      } catch {
-        if (!isActive) {
-          return;
-        }
-        setPricingStatus('unavailable');
-      }
-    };
-
-    loadPricing();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
+  const { priceMap, pricingStatus } = useMuapiPricing();
 
   if (pricingStatus === 'unavailable') {
     return <div>Pricing temporarily unavailable</div>;

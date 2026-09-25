@@ -8,6 +8,22 @@ function getDomain(urlString) {
   }
 }
 
+function isAllowedDomain(domain, allowlistDomains = []) {
+  if (!allowlistDomains.length) {
+    return true;
+  }
+
+  return allowlistDomains.some((allowedDomain) => {
+    const normalizedAllowedDomain = String(allowedDomain || '').toLowerCase();
+    const normalizedDomain = String(domain || '').toLowerCase();
+
+    return (
+      normalizedDomain === normalizedAllowedDomain ||
+      normalizedDomain.endsWith(`.${normalizedAllowedDomain}`)
+    );
+  });
+}
+
 export function createInternetReferenceRetriever({
   fetchReferences,
   permissionChecker,
@@ -27,8 +43,7 @@ export function createInternetReferenceRetriever({
       }
       const filtered = results.filter((item) => {
         const domain = getDomain(item.url);
-        if (!allowlistDomains.length) return true;
-        return allowlistDomains.includes(domain);
+        return isAllowedDomain(domain, allowlistDomains);
       });
 
       auditLogger?.log?.({

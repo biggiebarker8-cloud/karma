@@ -160,34 +160,31 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         </div>
       </div>
 
-      <nav
-        aria-label="Microsoft hub pages"
-        aria-orientation="horizontal"
-        role="tablist"
-        style={styles.pageNav}
-      >
-        {catalog.pages.map((page, pageIndex) => (
-          <button
-            key={page.id}
-            type="button"
-            role="tab"
-            id={`microsoft-hub-tab-${page.id}`}
-            ref={(element) => {
-              tabRefs.current[page.id] = element;
-            }}
-            aria-selected={page.id === activePage.id}
-            aria-controls={`microsoft-hub-panel-${page.id}`}
-            tabIndex={page.id === activePage.id ? 0 : -1}
-            style={{
-              ...styles.pageButton,
-              ...(page.id === activePage.id ? styles.activePageButton : null),
-            }}
-            onClick={() => setActivePageId(page.id)}
-            onKeyDown={(event) => handlePageKeyDown(event, pageIndex)}
-          >
-            {page.title}
-          </button>
-        ))}
+      <nav aria-label="Microsoft hub pages">
+        <div aria-orientation="horizontal" role="tablist" style={styles.pageNav}>
+          {catalog.pages.map((page, pageIndex) => (
+            <button
+              key={page.id}
+              type="button"
+              role="tab"
+              id={`microsoft-hub-tab-${page.id}`}
+              ref={(element) => {
+                tabRefs.current[page.id] = element;
+              }}
+              aria-selected={page.id === activePage.id}
+              aria-controls={`microsoft-hub-panel-${page.id}`}
+              tabIndex={page.id === activePage.id ? 0 : -1}
+              style={{
+                ...styles.pageButton,
+                ...(page.id === activePage.id ? styles.activePageButton : null),
+              }}
+              onClick={() => setActivePageId(page.id)}
+              onKeyDown={(event) => handlePageKeyDown(event, pageIndex)}
+            >
+              {page.title}
+            </button>
+          ))}
+        </div>
       </nav>
 
       <div

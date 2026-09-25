@@ -55,7 +55,7 @@ export function createAssistantRuntime({
     auditLogger,
   });
 
-  const pluginDeps = { rateLimiter, auditLogger };
+  const pluginDeps = { rateLimiter, auditLogger, permissionChecker };
   [
     createOpenclawPlugin(pluginDeps),
     createMicrosoftHubPlugin(pluginDeps),

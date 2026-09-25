@@ -2,6 +2,10 @@ import { PERMISSIONS } from '../core/permissions.js';
 import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin.js';
 
 export function createInstallExperiencePlugin({ installAdvisor, ...deps }) {
+  if (typeof installAdvisor?.getInstallOptions !== 'function') {
+    throw new Error('desktop-install plugin requires an installAdvisor');
+  }
+
   return createScopedIntegrationPlugin({
     id: 'desktop-install',
     requiredFlag: 'installExperienceEnabled',
@@ -15,4 +19,3 @@ export function createInstallExperiencePlugin({ installAdvisor, ...deps }) {
     },
   });
 }
-
