@@ -110,11 +110,20 @@ async function main() {
   });
 
   const plugin = getRequiredPlugin(runtime, 'openclaw', 'Openclaw');
+  const allianceBotPlugin = getRequiredPlugin(runtime, 'alliance-bot', 'Alliance Bot');
   const microsoftHubPlugin = getRequiredPlugin(runtime, 'microsoft-hub', 'Microsoft Hub');
 
   const actionId = 'describe-capabilities';
   const result = await runtime.pluginRegistry.execute('openclaw', actionId, {
     requestedBy: 'local-smoke-test',
+  });
+  const allianceActionId = 'ai-solutions-consulting';
+  const allianceResult = await runtime.pluginRegistry.execute('alliance-bot', allianceActionId, {
+    requestedBy: 'local-smoke-test',
+  });
+  const allianceBlocked = await runtime.pluginRegistry.execute('alliance-bot', allianceActionId, {
+    requestedBy: 'local-smoke-test',
+    requestedAction: 'change admin role',
   });
   const microsoftHubPages = await runtime.pluginRegistry.execute('microsoft-hub', 'list-pages', {
     requestedBy: 'local-smoke-test',
@@ -136,11 +145,27 @@ async function main() {
     pageId: 'developer',
   });
 
+  if (allianceResult.status !== 'ready') {
+    throw new Error('Alliance Bot standard action did not execute');
+  }
+  if (
+    allianceBlocked.status !== 'not-permitted' ||
+    allianceBlocked.code !== 'ALLIANCE_ACTION_NOT_PERMITTED' ||
+    allianceBlocked.canGuide !== true ||
+    allianceBlocked.canExecute !== false
+  ) {
+    throw new Error('Alliance Bot restricted-action contract is invalid');
+  }
+
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
+  console.log(`Alliance Bot Plugin: ${allianceBotPlugin.id}`);
   console.log(`Microsoft Hub Plugin: ${microsoftHubPlugin.id}`);
   console.log(`Action: ${actionId}`);
   console.log('Result:', JSON.stringify(result, null, 2));
+  console.log(`Alliance Bot Action: ${allianceActionId}`);
+  console.log('Alliance Bot Result:', JSON.stringify(allianceResult, null, 2));
+  console.log('Alliance Bot Restricted Result:', JSON.stringify(allianceBlocked, null, 2));
   console.log(
     'Microsoft Hub Pages:',
     JSON.stringify(microsoftHubPages.pages.map((page) => page.id), null, 2),
