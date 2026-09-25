@@ -24,6 +24,7 @@ async function main() {
     featureFlagOverrides: {
       pluginsEnabled: true,
       openclawEnabled: true,
+      microsoftHubEnabled: true,
       creativePluginsEnabled: true,
       installExperienceEnabled: true,
       internetReferencesEnabled: true,

@@ -130,8 +130,14 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
                 <h3 style={{ margin: '0 0 8px' }}>{card.title}</h3>
                 <p style={{ margin: 0, lineHeight: 1.6 }}>{card.summary}</p>
               </div>
-              <a href={card.href} target="_blank" rel="noreferrer" style={styles.cta}>
-                {card.ctaLabel}
+              <a
+                href={card.href}
+                target="_blank"
+                rel="noreferrer"
+                style={styles.cta}
+                aria-label={`${card.ctaLabel} (opens in a new tab)`}
+              >
+                {card.ctaLabel} ↗
               </a>
             </article>
           ))}
