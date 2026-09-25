@@ -22,15 +22,14 @@ export function createInternetReferenceRetriever({
       }
 
       const results = await fetchReferences(query);
+      if (requireCitation && results.some((item) => !item?.url)) {
+        throw new Error('All references must include a citation URL');
+      }
       const filtered = results.filter((item) => {
         const domain = getDomain(item.url);
         if (!allowlistDomains.length) return true;
         return allowlistDomains.includes(domain);
       });
-
-      if (requireCitation && filtered.some((item) => !item.url)) {
-        throw new Error('All references must include a citation URL');
-      }
 
       auditLogger?.log?.({
         type: 'references.retrieved',
@@ -42,4 +41,3 @@ export function createInternetReferenceRetriever({
     },
   };
 }
-

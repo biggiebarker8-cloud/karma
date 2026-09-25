@@ -1,10 +1,16 @@
+import { PERMISSIONS } from '../core/permissions.js';
+
 const DEFAULT_RETENTION_MS = {
   session: 24 * 60 * 60 * 1000,
   user: 30 * 24 * 60 * 60 * 1000,
   task: 7 * 24 * 60 * 60 * 1000,
 };
 
-export function createMemoryStore({ retentionMs = DEFAULT_RETENTION_MS, auditLogger } = {}) {
+export function createMemoryStore({
+  retentionMs = DEFAULT_RETENTION_MS,
+  auditLogger,
+  permissionChecker,
+} = {}) {
   const memory = {
     session: [],
     user: [],
@@ -18,9 +24,19 @@ export function createMemoryStore({ retentionMs = DEFAULT_RETENTION_MS, auditLog
     memory[scope] = memory[scope].filter((entry) => entry.createdAt > threshold);
   }
 
+  function assertWritePermission() {
+    if (
+      typeof permissionChecker === 'function' &&
+      !permissionChecker(PERMISSIONS.MEMORY_WRITE)
+    ) {
+      throw new Error('Memory write permission denied');
+    }
+  }
+
   return {
     write(scope, value) {
       if (!memory[scope]) throw new Error(`Unsupported memory scope: ${scope}`);
+      assertWritePermission();
       compact(scope);
       const entry = { value, createdAt: Date.now() };
       memory[scope].push(entry);
@@ -34,6 +50,7 @@ export function createMemoryStore({ retentionMs = DEFAULT_RETENTION_MS, auditLog
     },
     clear(scope) {
       if (!memory[scope]) throw new Error(`Unsupported memory scope: ${scope}`);
+      assertWritePermission();
       memory[scope] = [];
       auditLogger?.log?.({ type: 'memory.clear', scope });
     },

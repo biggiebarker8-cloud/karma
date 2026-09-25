@@ -82,26 +82,35 @@ export function createAssistantRuntime({
         })
       : null;
 
-  const hearingAdapter = createHearingAdapter({
-    speechToText,
-    permissionChecker,
-    auditLogger,
-  });
+  const hearingAdapter =
+    typeof speechToText === 'function'
+      ? createHearingAdapter({
+          speechToText,
+          permissionChecker,
+          auditLogger,
+        })
+      : null;
 
-  const voiceAdapter = createVoiceAdapter({
-    textToSpeech,
-    permissionChecker,
-    auditLogger,
-  });
+  const voiceAdapter =
+    typeof textToSpeech === 'function'
+      ? createVoiceAdapter({
+          textToSpeech,
+          permissionChecker,
+          auditLogger,
+        })
+      : null;
 
-  const visionAdapter = createVisionAdapter({
-    imageAnalyzer,
-    permissionChecker,
-    auditLogger,
-  });
+  const visionAdapter =
+    typeof imageAnalyzer === 'function'
+      ? createVisionAdapter({
+          imageAnalyzer,
+          permissionChecker,
+          auditLogger,
+        })
+      : null;
 
   const turnController = createTurnController();
-  const memoryStore = createMemoryStore({ auditLogger });
+  const memoryStore = createMemoryStore({ auditLogger, permissionChecker });
   const learningStore = createContinuousLearningStore({ auditLogger });
   const references =
     typeof fetchReferences === 'function'
