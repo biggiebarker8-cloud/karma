@@ -6,4 +6,4 @@ Run:
 
 `cd /home/runner/work/karma/karma/packages/studio && npm run try:assistant`
 
-The smoke run verifies that the Alliance Bot is registered, a standard allowlisted action executes, and a billing/admin request returns the structured `not-permitted` response instead of executing.
+The smoke run verifies that the Openclaw plugin is registered and callable, that Microsoft Hub remains unavailable without its feature flag or permission, and that the enabled Microsoft Hub plugin exposes the expected catalog pages, including the cloud, copilots, contact, and developer sections.
