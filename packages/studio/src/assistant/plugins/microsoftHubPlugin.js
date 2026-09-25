@@ -49,6 +49,9 @@ export function createMicrosoftHubPlugin(deps) {
             })),
           };
         case 'get-page': {
+          if (!context.pageId) {
+            throw new Error('microsoft-hub get-page requires a pageId');
+          }
           const page = getMicrosoftHubPage(context.pageId);
           if (!page) {
             const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');

@@ -100,13 +100,12 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         <p style={{ margin: 0, lineHeight: 1.6 }}>{catalog.summary}</p>
       </div>
 
-      <nav aria-label="Microsoft hub pages" role="tablist" style={styles.pageNav}>
+      <nav aria-label="Microsoft hub pages" style={styles.pageNav}>
         {catalog.pages.map((page) => (
           <button
             key={page.id}
             type="button"
-            role="tab"
-            aria-selected={page.id === activePage.id}
+            aria-pressed={page.id === activePage.id}
             style={{
               ...styles.pageButton,
               ...(page.id === activePage.id ? styles.activePageButton : null),
@@ -142,6 +141,9 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
           <aside style={styles.iosBox}>
             <h3 style={{ marginTop: 0 }}>{catalog.iosExperience.title}</h3>
             <p style={{ lineHeight: 1.6 }}>{catalog.iosExperience.summary}</p>
+            <p style={{ lineHeight: 1.6, fontWeight: 600 }}>
+              {catalog.iosExperience.installSuggestion}
+            </p>
             <ul style={{ margin: 0, paddingLeft: '20px', lineHeight: 1.7 }}>
               {catalog.iosExperience.recommendations.map((item) => (
                 <li key={item}>{item}</li>
