@@ -236,9 +236,9 @@ const HUB_PAGES = Object.freeze([
 ]);
 
 const PAGE_ALIAS_LOOKUP = HUB_PAGES.reduce((lookup, page) => {
-  lookup.set(page.id, page.id);
+  lookup.set(page.id.toLowerCase(), page.id);
   if (Array.isArray(page.aliases)) {
-    page.aliases.forEach((alias) => lookup.set(alias, page.id));
+    page.aliases.forEach((alias) => lookup.set(alias.toLowerCase(), page.id));
   }
   return lookup;
 }, new Map());
