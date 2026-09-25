@@ -73,7 +73,7 @@ async function main() {
   });
   const developerPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
     requestedBy: 'local-smoke-test',
-    pageId: 'visual-suite',
+    pageId: 'developer',
   });
 
   console.log('Assistant runtime is runnable.');
