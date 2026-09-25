@@ -1,5 +1,13 @@
 import { createAssistantRuntime } from '../src/assistant/index.js';
 
+function getRequiredPlugin(runtime, pluginId, label) {
+  const plugin = runtime.pluginRegistry.list().find((candidate) => candidate.id === pluginId);
+  if (!plugin) {
+    throw new Error(`${label} plugin is not registered in the assistant runtime`);
+  }
+  return plugin;
+}
+
 async function main() {
   const runtime = createAssistantRuntime({
     permissions: [
@@ -47,17 +55,8 @@ async function main() {
     },
   });
 
-  const plugin = runtime.pluginRegistry.list().find((candidate) => candidate.id === 'openclaw');
-  if (!plugin) {
-    throw new Error('Openclaw plugin is not registered in the assistant runtime');
-  }
-  const microsoftHubPlugin = runtime
-    .pluginRegistry
-    .list()
-    .find((candidate) => candidate.id === 'microsoft-hub');
-  if (!microsoftHubPlugin) {
-    throw new Error('Microsoft Hub plugin is not registered in the assistant runtime');
-  }
+  const plugin = getRequiredPlugin(runtime, 'openclaw', 'Openclaw');
+  const microsoftHubPlugin = getRequiredPlugin(runtime, 'microsoft-hub', 'Microsoft Hub');
 
   const actionId = 'describe-capabilities';
   const result = await runtime.pluginRegistry.execute('openclaw', actionId, {

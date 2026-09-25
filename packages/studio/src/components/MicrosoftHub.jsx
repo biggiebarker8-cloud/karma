@@ -177,7 +177,6 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
               ...(page.id === activePage.id ? styles.activePageButton : null),
             }}
             onClick={() => setActivePageId(page.id)}
-            onFocus={() => setActivePageId(page.id)}
             onKeyDown={(event) => handlePageKeyDown(event, pageIndex)}
           >
             {page.title}
