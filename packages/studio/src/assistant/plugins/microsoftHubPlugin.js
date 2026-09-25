@@ -51,7 +51,10 @@ export function createMicrosoftHubPlugin(deps) {
         case 'get-page': {
           const page = getMicrosoftHubPage(context.pageId);
           if (!page) {
-            throw new Error(`Unsupported microsoft-hub page: ${context.pageId}`);
+            const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');
+            throw new Error(
+              `Unsupported microsoft-hub page: ${context.pageId}. Supported pages: ${supportedPageIds}`,
+            );
           }
           return {
             platform: 'microsoft-hub',

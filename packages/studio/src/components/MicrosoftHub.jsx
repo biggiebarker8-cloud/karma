@@ -77,7 +77,10 @@ const styles = {
 export default function MicrosoftHub({ initialPageId = 'products' }) {
   const catalog = useMemo(() => getMicrosoftHubCatalog(), []);
   const firstPageId = catalog.pages[0]?.id || 'products';
-  const [activePageId, setActivePageId] = useState(initialPageId || firstPageId);
+  const initialActivePageId = catalog.pages.some((page) => page.id === initialPageId)
+    ? initialPageId
+    : firstPageId;
+  const [activePageId, setActivePageId] = useState(initialActivePageId);
   const activePage =
     catalog.pages.find((page) => page.id === activePageId) || catalog.pages[0] || null;
 
@@ -97,11 +100,13 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         <p style={{ margin: 0, lineHeight: 1.6 }}>{catalog.summary}</p>
       </div>
 
-      <nav aria-label="Microsoft hub pages" style={styles.pageNav}>
+      <nav aria-label="Microsoft hub pages" role="tablist" style={styles.pageNav}>
         {catalog.pages.map((page) => (
           <button
             key={page.id}
             type="button"
+            role="tab"
+            aria-selected={page.id === activePage.id}
             style={{
               ...styles.pageButton,
               ...(page.id === activePage.id ? styles.activePageButton : null),
