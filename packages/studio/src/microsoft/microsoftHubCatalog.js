@@ -144,6 +144,50 @@ const HUB_PAGES = Object.freeze([
     ],
   },
   {
+    id: 'copilots',
+    aliases: ['copilot', 'ai-copilots', 'microsoft-copilot'],
+    title: 'Copilots & AI',
+    description: 'Different Microsoft Copilot experiences, copilots for work, and AI builder tools.',
+    cards: [
+      {
+        title: 'Microsoft Copilot',
+        summary: 'The general Microsoft Copilot experience for chat, search, writing, and everyday assistance.',
+        href: 'https://www.microsoft.com/en-us/microsoft-copilot',
+        ctaLabel: 'Open Microsoft Copilot',
+      },
+      {
+        title: 'Microsoft 365 Copilot',
+        summary: 'Copilot inside Word, Excel, PowerPoint, Outlook, Teams, and other Microsoft 365 workflows.',
+        href: 'https://www.microsoft.com/en-us/microsoft-365/copilot',
+        ctaLabel: 'Explore Microsoft 365 Copilot',
+      },
+      {
+        title: 'Copilot Studio',
+        summary: 'Build custom copilots, automate conversations, and connect data and business workflows.',
+        href: 'https://www.microsoft.com/en-us/microsoft-copilot/microsoft-copilot-studio',
+        ctaLabel: 'Open Copilot Studio',
+      },
+      {
+        title: 'GitHub Copilot',
+        summary: 'AI pair programming, code completion, chat, agent workflows, and developer productivity features.',
+        href: 'https://github.com/features/copilot',
+        ctaLabel: 'View GitHub Copilot',
+      },
+      {
+        title: 'Security Copilot',
+        summary: 'AI assistance for incident response, threat hunting, and security operations workflows.',
+        href: 'https://www.microsoft.com/en-us/security/business/ai-machine-learning/microsoft-security-copilot',
+        ctaLabel: 'See Security Copilot',
+      },
+      {
+        title: 'Azure AI Foundry',
+        summary: 'Enterprise AI platform for models, orchestration, evaluation, and application delivery.',
+        href: 'https://azure.microsoft.com/en-us/products/ai-foundry',
+        ctaLabel: 'Explore Azure AI Foundry',
+      },
+    ],
+  },
+  {
     id: 'offers',
     aliases: ['deals', 'promotions'],
     title: 'Offers',
@@ -216,6 +260,50 @@ const HUB_PAGES = Object.freeze([
         summary: 'Publish and sell SaaS apps, services, and offers through Microsoft channels.',
         href: 'https://learn.microsoft.com/en-us/partner-center/marketplace-offers/overview',
         ctaLabel: 'Review marketplace guidance',
+      },
+    ],
+  },
+  {
+    id: 'developer',
+    aliases: ['developers', 'visual-suite', 'visual-studio-suite', 'dev-tools'],
+    title: 'Developer & Visual Suite',
+    description: 'Developer platforms, Visual Studio tools, app frameworks, and engineering productivity resources.',
+    cards: [
+      {
+        title: 'Visual Studio',
+        summary: 'Full IDE for .NET, C++, Azure development, debugging, testing, and enterprise engineering workflows.',
+        href: 'https://visualstudio.microsoft.com/',
+        ctaLabel: 'Open Visual Studio',
+      },
+      {
+        title: 'Visual Studio Code',
+        summary: 'Lightweight editor with extensions, AI tooling, debugging, terminals, and cross-platform workflows.',
+        href: 'https://code.visualstudio.com/',
+        ctaLabel: 'Open VS Code',
+      },
+      {
+        title: '.NET',
+        summary: 'Developer platform for web, cloud, desktop, mobile, gaming, and AI application development.',
+        href: 'https://dotnet.microsoft.com/',
+        ctaLabel: 'Explore .NET',
+      },
+      {
+        title: 'Azure developer tools',
+        summary: 'Developer services and SDK guidance for app delivery, deployment, containers, and cloud operations.',
+        href: 'https://azure.microsoft.com/en-us/products/developer-tools',
+        ctaLabel: 'View Azure developer tools',
+      },
+      {
+        title: 'Microsoft Dev Box',
+        summary: 'Cloud-based developer workstations for secure, repeatable, enterprise development environments.',
+        href: 'https://azure.microsoft.com/en-us/products/dev-box',
+        ctaLabel: 'See Dev Box',
+      },
+      {
+        title: 'Power Platform developer center',
+        summary: 'Low-code and pro-code resources for Power Apps, Power Automate, Dataverse, and integrations.',
+        href: 'https://learn.microsoft.com/en-us/power-platform/developer/',
+        ctaLabel: 'Open developer center',
       },
     ],
   },
@@ -302,13 +390,16 @@ export function getMicrosoftHubCatalog() {
     id: 'microsoft-hub',
     title: 'Microsoft Knowledge Base',
     summary:
-      'A curated Microsoft knowledge base with business, cloud, product, offer, partner, learning, and Apple-friendly pages.',
+      'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, learning, and Apple-friendly pages.',
     featuredTopics: [
       'Microsoft 365',
       'Dynamics 365',
       'Power Platform',
       'Azure',
-      'Azure AI',
+      'Microsoft Copilot',
+      'GitHub Copilot',
+      'Visual Studio',
+      'Visual Studio Code',
       'Microsoft Cloud',
       'Partner programs',
       'Microsoft Learn',
@@ -323,7 +414,7 @@ export function getMicrosoftHubCatalog() {
     knowledgeBaseNotes: [
       'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
       'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
-      'Business and cloud sections highlight Microsoft commercial workloads and Azure-first architecture resources.',
+      'Business, cloud, Copilot, and developer sections highlight Microsoft commercial workloads, AI tools, and Visual Studio resources.',
     ],
   };
 }

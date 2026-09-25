@@ -63,6 +63,14 @@ async function main() {
     requestedBy: 'local-smoke-test',
     pageId: 'cloud',
   });
+  const copilotsPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
+    requestedBy: 'local-smoke-test',
+    pageId: 'copilots',
+  });
+  const developerPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
+    requestedBy: 'local-smoke-test',
+    pageId: 'visual-suite',
+  });
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
@@ -73,6 +81,8 @@ async function main() {
     JSON.stringify(microsoftHubPages.pages.map((page) => page.id), null, 2),
   );
   console.log('Microsoft Cloud Page:', cloudPage.page.title, cloudPage.page.cards.length);
+  console.log('Microsoft Copilots Page:', copilotsPage.page.title, copilotsPage.page.cards.length);
+  console.log('Microsoft Visual Suite Page:', developerPage.page.title, developerPage.page.cards.length);
 }
 
 main().catch((error) => {

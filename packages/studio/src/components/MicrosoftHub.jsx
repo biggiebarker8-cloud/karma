@@ -148,7 +148,7 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
           Microsoft knowledge base
         </p>
         <h1 style={{ margin: '8px 0 12px', fontSize: 'clamp(1.75rem, 4vw, 2.5rem)' }}>
-          Microsoft business, cloud, products, offers, partner programs, and learning in one place
+          Microsoft Copilots, cloud, business tools, visual suite, and learning in one place
         </h1>
         <p style={{ margin: 0, lineHeight: 1.6 }}>{catalog.summary}</p>
         <div style={styles.tagRow} aria-label="Featured Microsoft topics">
