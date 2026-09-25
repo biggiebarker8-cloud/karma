@@ -128,22 +128,17 @@ async function main() {
   const microsoftHubPages = await runtime.pluginRegistry.execute('microsoft-hub', 'list-pages', {
     requestedBy: 'local-smoke-test',
   });
-  const cloudPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
-    requestedBy: 'local-smoke-test',
-    pageId: 'cloud',
-  });
-  const copilotsPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
-    requestedBy: 'local-smoke-test',
-    pageId: 'copilots',
-  });
-  const contactPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
-    requestedBy: 'local-smoke-test',
-    pageId: 'contact',
-  });
-  const developerPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
-    requestedBy: 'local-smoke-test',
-    pageId: 'developer',
-  });
+  const getHubPage = (pageId) =>
+    runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
+      requestedBy: 'local-smoke-test',
+      pageId,
+    });
+  const [cloudPage, copilotsPage, contactPage, developerPage] = await Promise.all([
+    getHubPage('cloud'),
+    getHubPage('copilots'),
+    getHubPage('contact'),
+    getHubPage('developer'),
+  ]);
 
   if (allianceResult.status !== 'ready') {
     throw new Error('Alliance Bot standard action did not execute');

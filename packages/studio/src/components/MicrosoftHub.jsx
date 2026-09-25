@@ -126,6 +126,11 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
       case 'End':
         nextIndex = pageCount - 1;
         break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        setActivePageId(catalog.pages[pageIndex].id);
+        return;
       default:
         return;
     }
@@ -195,7 +200,6 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         role="tabpanel"
         id={`microsoft-hub-panel-${activePage.id}`}
         aria-labelledby={`microsoft-hub-tab-${activePage.id}`}
-        tabIndex={0}
       >
         <header style={{ marginBottom: '16px' }}>
           <h2 style={{ marginBottom: '8px' }}>{activePage.title}</h2>

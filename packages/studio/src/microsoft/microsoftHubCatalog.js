@@ -429,43 +429,45 @@ const HUB_PAGES = Object.freeze([
   },
 ]);
 
+const MICROSOFT_HUB_CATALOG = Object.freeze({
+  id: 'microsoft-hub',
+  title: 'Microsoft Knowledge Base',
+  summary:
+    'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, contact, learning, and Apple-friendly pages.',
+  featuredTopics: [
+    'Microsoft 365',
+    'Dynamics 365',
+    'Power Platform',
+    'Azure',
+    'Microsoft Copilot',
+    'GitHub Copilot',
+    'Visual Studio',
+    'Visual Studio Code',
+    'Microsoft Cloud',
+    'Microsoft Support',
+    'Partner programs',
+    'Microsoft Learn',
+  ],
+  pages: HUB_PAGES,
+  iosExperience: {
+    title: 'Apple-friendly access',
+    summary: 'Microsoft services can feel smoother on Apple hardware when users start from web-first entry points and lightweight navigation.',
+    installSuggestion: 'Offer Home Screen or bookmarks for frequently used Microsoft web experiences on iOS.',
+    recommendations: HUB_PAGES.find((page) => page.id === 'apple')?.iosRecommendations || [],
+  },
+  knowledgeBaseNotes: [
+    'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
+    'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
+    'Business, cloud, Copilot, contact, and developer sections highlight Microsoft commercial workloads, support paths, AI tools, and Visual Studio resources.',
+  ],
+});
+
 export function getMicrosoftHubCatalog() {
-  return {
-    id: 'microsoft-hub',
-    title: 'Microsoft Knowledge Base',
-    summary:
-      'A curated Microsoft knowledge base with business, cloud, Copilot, developer, product, offer, partner, contact, learning, and Apple-friendly pages.',
-    featuredTopics: [
-      'Microsoft 365',
-      'Dynamics 365',
-      'Power Platform',
-      'Azure',
-      'Microsoft Copilot',
-      'GitHub Copilot',
-      'Visual Studio',
-      'Visual Studio Code',
-      'Microsoft Cloud',
-      'Microsoft Support',
-      'Partner programs',
-      'Microsoft Learn',
-    ],
-    pages: HUB_PAGES,
-    iosExperience: {
-      title: 'Apple-friendly access',
-      summary: 'Microsoft services can feel smoother on Apple hardware when users start from web-first entry points and lightweight navigation.',
-      installSuggestion: 'Offer Home Screen or bookmarks for frequently used Microsoft web experiences on iOS.',
-      recommendations: HUB_PAGES.find((page) => page.id === 'apple')?.iosRecommendations || [],
-    },
-    knowledgeBaseNotes: [
-      'Use these sections as a curated starting point rather than a full offline copy of Microsoft documentation.',
-      'Each page combines direct product entry points with official Microsoft Learn or partner guidance when available.',
-      'Business, cloud, Copilot, contact, and developer sections highlight Microsoft commercial workloads, support paths, AI tools, and Visual Studio resources.',
-    ],
-  };
+  return MICROSOFT_HUB_CATALOG;
 }
 
 export function getMicrosoftHubPage(pageId = '') {
-  const catalog = getMicrosoftHubCatalog();
+  const catalog = MICROSOFT_HUB_CATALOG;
   const normalize = (value) =>
     String(value || '')
       .trim()

@@ -56,7 +56,7 @@ export function createMicrosoftHubPlugin(deps) {
           if (!page) {
             const supportedPageIds = catalog.pages.map((catalogPage) => catalogPage.id).join(', ');
             throw new Error(
-              `Unsupported microsoft-hub page: ${context.pageId}. Supported canonical page ids: ${supportedPageIds}. Aliases and page titles are also accepted.`,
+              `Unsupported microsoft-hub page: ${context.pageId}. Supported canonical page ids: ${supportedPageIds}. Aliases and page titles are also accepted, for example "visual-suite", "support", or "Microsoft Learn".`,
             );
           }
           return {
