@@ -25,5 +25,5 @@ This repository now includes a foundation for:
 - Openclaw exposes standalone app planning, agency workspace setup, TikTok dashboard setup, AI permissions handoff, and Larks documentation handoff actions so it can support an agency launch without being coupled into Larks.
 - Creative and vision capabilities are dependency-injected so production analyzers/providers can be wired safely.
 - Network/OAuth-specific implementations are intentionally dependency-injected for secure wiring in app-specific runtime code.
-- iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install.
+- iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install, while still exposing Apple App Store and Google Play links together when configured.
 - The Microsoft hub acts as a curated Microsoft knowledge base, including Copilot, business, cloud, contact/support, and developer/visual suite sections plus official Microsoft links and Apple-friendly web-first guidance for iPhone, iPad, and Mac users.
