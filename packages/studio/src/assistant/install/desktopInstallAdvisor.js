@@ -88,7 +88,9 @@ export function createDesktopInstallAdvisor({
       const profileOptions = DEFAULT_OPTIONS[deviceProfile] || DEFAULT_OPTIONS.unknown;
       const nativeLink = installLinks[deviceProfile] || null;
       const mobileStoreLinks =
-        deviceProfile === 'ios' ? getMobileStoreLinks(installLinks) : [];
+        profileOptions.recommendedPath === 'manual_add_to_home_screen'
+          ? getMobileStoreLinks(installLinks)
+          : [];
       const autoInstallEnabled = Boolean(
         profileOptions.autoInstallAvailable && (supportsInstallPrompt || nativeLink),
       );
