@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
-import { getMicrosoftHubCatalog } from '../microsoft/microsoftHubCatalog.js';
+import { getMicrosoftHubCatalog, getMicrosoftHubPage } from '../microsoft/microsoftHubCatalog.js';
 
 const styles = {
   shell: {
@@ -98,9 +98,8 @@ const styles = {
 export default function MicrosoftHub({ initialPageId = 'products' }) {
   const catalog = useMemo(() => getMicrosoftHubCatalog(), []);
   const firstPageId = catalog.pages[0]?.id || 'products';
-  const initialActivePageId = catalog.pages.some((page) => page.id === initialPageId)
-    ? initialPageId
-    : firstPageId;
+  const initialPage = getMicrosoftHubPage(initialPageId);
+  const initialActivePageId = initialPage?.id || firstPageId;
   const [activePageId, setActivePageId] = useState(initialActivePageId);
   const tabRefs = useRef({});
   const activePage =
