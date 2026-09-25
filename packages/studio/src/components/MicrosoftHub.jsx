@@ -160,7 +160,12 @@ export default function MicrosoftHub({ initialPageId = 'products' }) {
         </div>
       </div>
 
-      <nav aria-label="Microsoft hub pages" role="tablist" style={styles.pageNav}>
+      <nav
+        aria-label="Microsoft hub pages"
+        aria-orientation="horizontal"
+        role="tablist"
+        style={styles.pageNav}
+      >
         {catalog.pages.map((page, pageIndex) => (
           <button
             key={page.id}

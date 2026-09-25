@@ -6,6 +6,10 @@ export function createScopedIntegrationPlugin({
   auditLogger,
   actionHandler,
 }) {
+  if (typeof actionHandler !== 'function') {
+    throw new Error(`Plugin ${id} requires an actionHandler`);
+  }
+
   return {
     id,
     requiredFlag,
@@ -22,4 +26,3 @@ export function createScopedIntegrationPlugin({
     },
   };
 }
-
