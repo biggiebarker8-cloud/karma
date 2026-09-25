@@ -67,6 +67,10 @@ async function main() {
     requestedBy: 'local-smoke-test',
     pageId: 'copilots',
   });
+  const contactPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
+    requestedBy: 'local-smoke-test',
+    pageId: 'contact',
+  });
   const developerPage = await runtime.pluginRegistry.execute('microsoft-hub', 'get-page', {
     requestedBy: 'local-smoke-test',
     pageId: 'visual-suite',
@@ -82,6 +86,7 @@ async function main() {
   );
   console.log('Microsoft Cloud Page:', cloudPage.page.title, cloudPage.page.cards.length);
   console.log('Microsoft Copilots Page:', copilotsPage.page.title, copilotsPage.page.cards.length);
+  console.log('Microsoft Contact Page:', contactPage.page.title, contactPage.page.cards.length);
   console.log('Microsoft Visual Suite Page:', developerPage.page.title, developerPage.page.cards.length);
 }
 
