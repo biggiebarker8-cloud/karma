@@ -260,6 +260,19 @@ const PAGE_ALIAS_LOOKUP = (() => {
   return lookup;
 })();
 
+const PAGE_BY_ID_LOOKUP = (() => {
+  const lookup = new Map();
+
+  HUB_PAGES.forEach((page) => {
+    if (lookup.has(page.id)) {
+      throw new Error(`Duplicate Microsoft hub page id detected: "${page.id}"`);
+    }
+    lookup.set(page.id, page);
+  });
+
+  return lookup;
+})();
+
 const HUB_CATALOG = Object.freeze({
   title: 'Microsoft knowledge base',
   summary: 'Curated Microsoft pages for products, business, cloud, copilots, developer tools, learning, and contact resources.',
@@ -316,5 +329,5 @@ export function getMicrosoftHubPage(pageId) {
     return null;
   }
 
-  return HUB_PAGES.find((page) => page.id === normalizedPageId) || null;
+  return PAGE_BY_ID_LOOKUP.get(normalizedPageId) || null;
 }
