@@ -2,7 +2,6 @@ import { PERMISSIONS } from '../core/permissions';
 import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin';
 import {
   getMicrosoftHubCatalog,
-  getMicrosoftHubPage,
   resolveMicrosoftHubPageId,
 } from '../../microsoft/microsoftHubCatalog';
 
@@ -59,10 +58,10 @@ export function createMicrosoftHubPlugin(deps) {
             );
           }
 
-          const page = getMicrosoftHubPage(normalizedPageId);
+          const page = catalog.pages.find((catalogPage) => catalogPage.id === normalizedPageId);
           if (!page) {
             throw new Error(
-              `Unsupported microsoft-hub page: ${context.pageId}. Supported pages: ${supportedPageIds}`,
+              `microsoft-hub page catalog is unavailable for: ${context.pageId}. Supported pages: ${supportedPageIds}`,
             );
           }
 
