@@ -83,7 +83,7 @@ export function createAssistantRuntime({
       : null;
 
   const hearingAdapter =
-    typeof speechToText === 'function'
+    featureFlags.voiceInputEnabled && typeof speechToText === 'function'
       ? createHearingAdapter({
           speechToText,
           permissionChecker,
@@ -92,7 +92,7 @@ export function createAssistantRuntime({
       : null;
 
   const voiceAdapter =
-    typeof textToSpeech === 'function'
+    featureFlags.voiceOutputEnabled && typeof textToSpeech === 'function'
       ? createVoiceAdapter({
           textToSpeech,
           permissionChecker,
@@ -101,7 +101,7 @@ export function createAssistantRuntime({
       : null;
 
   const visionAdapter =
-    typeof imageAnalyzer === 'function'
+    featureFlags.visionEnabled && typeof imageAnalyzer === 'function'
       ? createVisionAdapter({
           imageAnalyzer,
           permissionChecker,
@@ -110,10 +110,14 @@ export function createAssistantRuntime({
       : null;
 
   const turnController = createTurnController();
-  const memoryStore = createMemoryStore({ auditLogger, permissionChecker });
-  const learningStore = createContinuousLearningStore({ auditLogger });
+  const memoryStore = featureFlags.memoryEnabled
+    ? createMemoryStore({ auditLogger, permissionChecker })
+    : null;
+  const learningStore = featureFlags.continuousLearningEnabled
+    ? createContinuousLearningStore({ auditLogger })
+    : null;
   const references =
-    typeof fetchReferences === 'function'
+    featureFlags.internetReferencesEnabled && typeof fetchReferences === 'function'
       ? createInternetReferenceRetriever({
           fetchReferences,
           permissionChecker,

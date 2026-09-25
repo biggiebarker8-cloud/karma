@@ -7,10 +7,11 @@ export function useMuapiPricing() {
 
   useEffect(() => {
     let isActive = true;
+    const abortController = new AbortController();
 
     const loadPricing = async () => {
       try {
-        const prices = await getMuapiPriceMap();
+        const prices = await getMuapiPriceMap({ signal: abortController.signal });
         if (!isActive) {
           return;
         }
@@ -28,6 +29,7 @@ export function useMuapiPricing() {
 
     return () => {
       isActive = false;
+      abortController.abort();
     };
   }, []);
 
