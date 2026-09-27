@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#12151e">
+  <title>Karma · Alliance Command</title>
+  <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><span class="mark">K</span><div><strong>KARMA</strong><small>ALLIANCE COMMAND</small></div></div>
+      <nav aria-label="Workspace">
+        <button class="nav active" data-view="home">Command</button>
+        <button class="nav" data-view="chat">Talk to Karma</button>
+        <button class="nav" data-view="ideas">Organise an idea</button>
+        <button class="nav" data-view="universe">Comic universe</button>
+        <button class="nav" data-view="knowledge">Knowledge</button>
+        <button class="nav" data-view="approvals">Approvals</button>
+      </nav>
+      <div class="sidebar-foot"><span id="status-dot">●</span> <span id="status">Connecting…</span><p>Owner decisions stay with you.</p></div>
+    </aside>
+    <main>
+      <header><div><small>CREATOR ALLIANCE NETWORKS</small><h1 id="heading">Command</h1></div><button id="token-button" class="subtle">Access key</button></header>
+      <div id="notice" role="status" aria-live="polite"></div>
+      <section id="home" class="view active">
+        <div class="welcome"><span class="eyebrow">KARMA IS HERE</span><h2>What needs sorting, Dan?</h2><p>Start with an idea, check your comic universe, or look through the built-in references.</p><button data-go="ideas" class="primary">Organise an idea →</button></div>
+        <div class="cards">
+          <button data-go="universe" class="card"><span>01 / CREATIVE</span><strong>Comic universe</strong><small>Characters, stories and continuity</small></button>
+          <button data-go="knowledge" class="card"><span>02 / REFERENCE</span><strong>Knowledge</strong><small>See what Karma actually has</small></button>
+          <button data-go="approvals" class="card"><span>03 / CONTROL</span><strong>Approvals</strong><small>Review owner-gated changes</small></button>
+        </div>
+      </section>
+      <section id="chat" class="view"><div class="panel"><h2>Talk to Karma</h2><p id="chat-state">Checking AI connection…</p><div id="chat-log" class="chat-log" aria-live="polite"></div><form id="chat-form"><label for="chat-message">Message</label><textarea id="chat-message" rows="3" required placeholder="Tell Karma what you need…"></textarea><button class="primary">Send</button></form></div></section>
+      <section id="ideas" class="view">
+        <div class="panel"><h2>Get the thought out</h2><p>Write it rough. Karma will turn it into a first plan and flag anything that needs a change.</p>
+          <form id="idea-form"><label for="thought">Your idea</label><textarea id="thought" rows="6" required placeholder="The messy version is fine…"></textarea><label for="goal">What do you want done? <span>(optional)</span></label><input id="goal" placeholder="One clear outcome"><button class="primary" type="submit">Structure it</button></form>
+        </div><div id="idea-result" class="panel result" hidden></div>
+      </section>
+      <section id="universe" class="view">
+        <div class="section-title"><div><h2>Comic universe</h2><p>Saved universes and character records.</p></div><button id="refresh-universe" class="subtle">Refresh</button></div>
+        <div class="grid-two"><div class="panel"><h3>Create a universe</h3><form id="universe-form"><label for="universe-name">Name</label><input id="universe-name" required placeholder="Alliance Universe"><label for="universe-canon">Canon</label><input id="universe-canon" placeholder="Prime Canon"><label for="universe-timeline">Timeline</label><input id="universe-timeline" placeholder="Season 1"><button class="primary">Save universe</button></form></div><div class="panel"><h3>Universes</h3><div id="universe-list" class="list"></div></div></div>
+        <div class="grid-two lower"><div class="panel"><h3>Add a character</h3><form id="character-form"><label for="character-universe">Universe</label><select id="character-universe" required></select><label for="character-name">Name</label><input id="character-name" required placeholder="Karma"><label for="character-backstory">Backstory</label><textarea id="character-backstory" rows="3"></textarea><button class="primary">Save character</button></form></div><div class="panel"><h3>Characters</h3><div id="character-list" class="list"></div></div></div>
+      </section>
+      <section id="knowledge" class="view"><div class="section-title"><div><h2>Knowledge</h2><p>These are built-in reference notes, not live platform access.</p></div></div><div id="knowledge-list" class="cards knowledge"></div><div id="knowledge-detail" class="panel lower" hidden></div></section>
+      <section id="approvals" class="view"><div class="section-title"><div><h2>Approval centre</h2><p>Review requests before protected changes are enabled.</p></div><button id="refresh-approvals" class="subtle">Refresh</button></div><div id="approval-list" class="panel list"></div></section>
+    </main>
+  </div>
+  <dialog id="access-dialog"><form method="dialog"><h2>Access key</h2><p>Enter the key you set on your iMac. It stays in this browser session.</p><label for="access-key">Key</label><input id="access-key" type="password" autocomplete="off"><div class="actions"><button value="cancel" class="subtle">Cancel</button><button id="save-key" value="save" class="primary">Save</button></div></form></dialog>
+  <script src="/app.js" defer></script>
+</body>
+</html>

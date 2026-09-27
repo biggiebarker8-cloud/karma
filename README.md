@@ -1,7 +1,9 @@
-# karma
+# Karma
 
-## Try the assistant locally
+## Browser app for iMac and phone
 
-Run:
+Open [apps/karma-web/README.md](apps/karma-web/README.md) for the local browser app, launch steps, and current limitations.
 
-`cd /home/runner/work/karma/karma/packages/studio && npm run try:assistant`
+## Try the studio assistant locally
+
+From the repository root, run `cd packages/studio && npm run try:assistant`.
