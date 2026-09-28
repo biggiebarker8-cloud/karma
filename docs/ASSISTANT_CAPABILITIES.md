@@ -13,6 +13,7 @@ This repository now includes a foundation for:
 - Memory scopes (session/user/task), tone profiles, and accessibility profiles
 - Continuous learning feedback capture
 - Internet reference retrieval with domain allowlisting and required citations
+- Chat Hub runtime for a single ChatGPT-style interface with skill routing (auto/manual/multi), OpenAPI settings, rich output blocks, tool-use, history, and regeneration/compare flows
 
 ## Entry point
 

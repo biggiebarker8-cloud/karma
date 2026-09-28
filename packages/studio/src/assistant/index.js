@@ -14,6 +14,7 @@ import { createInternetReferenceRetriever } from './references/internetReference
 import { getAccessibilityProfile } from './accessibility/accessibilityProfiles.js';
 import { createVisionAdapter } from './vision/visionAdapter.js';
 import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor.js';
+import { createChatHubRuntime } from './chat/chatHubRuntime.js';
 import { createOpenclawPlugin } from './plugins/openclawPlugin.js';
 import { createMicrosoftHubPlugin } from './plugins/microsoftHubPlugin.js';
 import { createTikTokPlugin } from './plugins/tiktokPlugin.js';
@@ -107,6 +108,15 @@ export function createAssistantRuntime({
     requireCitation: true,
     auditLogger,
   });
+  const chatHub = createChatHubRuntime({
+    pluginRegistry,
+    modelGateway,
+    memoryStore,
+    learningStore,
+    references,
+    visionAdapter,
+    auditLogger,
+  });
 
   return {
     featureFlags,
@@ -119,6 +129,7 @@ export function createAssistantRuntime({
     memoryStore,
     learningStore,
     references,
+    chatHub,
     installAdvisor,
     getDesktopInstallOptions(context = {}) {
       return installAdvisor.getInstallOptions(context);

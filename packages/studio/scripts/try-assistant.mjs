@@ -71,6 +71,19 @@ async function main() {
     requestedBy: 'local-smoke-test',
     pageId: 'visual-suite',
   });
+  const chatResult = await runtime.chatHub.sendMessage({
+    sessionId: 'smoke-chat',
+    prompt: 'Create a comic concept and include implementation notes',
+    skillMode: 'multi',
+    multiSkills: ['comic', 'project'],
+    webResearch: true,
+    tools: ['plugins.list'],
+  });
+  const regenerated = await runtime.chatHub.regenerateLast({
+    sessionId: 'smoke-chat',
+    skillMode: 'manual',
+    manualSkill: 'writing',
+  });
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
@@ -83,6 +96,9 @@ async function main() {
   console.log('Microsoft Cloud Page:', cloudPage.page.title, cloudPage.page.cards.length);
   console.log('Microsoft Copilots Page:', copilotsPage.page.title, copilotsPage.page.cards.length);
   console.log('Microsoft Visual Suite Page:', developerPage.page.title, developerPage.page.cards.length);
+  console.log('Chat Hub Status:', chatResult.status);
+  console.log('Chat Hub Skills:', chatResult.assistantMessage?.plan?.skillIds);
+  console.log('Chat Hub Regenerated:', regenerated.status);
 }
 
 main().catch((error) => {
