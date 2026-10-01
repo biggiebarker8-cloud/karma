@@ -3,6 +3,16 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview",
     "try:assistant": "node --loader ./scripts/js-extension-loader.mjs ./scripts/try-assistant.mjs"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "vite": "6.4.3"
   }
 }
