@@ -1,6 +1,94 @@
 import { createAssistantRuntime } from '../src/assistant/index.js';
+import assert from 'node:assert/strict';
 
 async function main() {
+  const testDeps = { modelTransport: async () => 'ok' };
+  const disabledApple = createAssistantRuntime({
+    ...testDeps,
+    permissions: ['apple:sign-in', 'apple:cloud-connect'],
+  });
+  assert.equal(disabledApple.pluginRegistry.isAvailable('apple-sign-in'), false);
+
+  const unauthorizedApple = createAssistantRuntime({
+    ...testDeps,
+    featureFlagOverrides: { appleEnabled: true },
+  });
+  assert.equal(unauthorizedApple.pluginRegistry.isAvailable('apple-cloud'), false);
+
+  const unconfiguredApple = createAssistantRuntime({
+    ...testDeps,
+    permissions: ['apple:sign-in', 'apple:cloud-connect'],
+    featureFlagOverrides: { appleEnabled: true },
+  });
+  await assert.rejects(
+    unconfiguredApple.pluginRegistry.execute('apple-sign-in', 'sign-in'),
+    /provider is not configured/,
+  );
+  await assert.rejects(
+    unconfiguredApple.pluginRegistry.execute('apple-cloud', 'connect'),
+    /provider is not configured/,
+  );
+
+  let authenticated = false;
+  const apple = createAssistantRuntime({
+    ...testDeps,
+    permissions: ['apple:sign-in', 'apple:cloud-connect'],
+    featureFlagOverrides: { appleEnabled: true },
+    appleAuth: {
+      async signIn() {
+        authenticated = true;
+        return { id: 'apple-user', email: 'user@example.test', identityToken: 'not-exposed' };
+      },
+      async getSession() {
+        return authenticated ? { userId: 'apple-user' } : null;
+      },
+      async signOut() {
+        authenticated = false;
+      },
+    },
+    appleCloud: {
+      async connect(session) {
+        assert.equal(session.userId, 'apple-user');
+        return { connected: true, token: 'not-exposed' };
+      },
+      async getStatus() {
+        return { connected: true };
+      },
+      async disconnect() {
+        return { connected: false };
+      },
+      async sync(session) {
+        assert.equal(session.userId, 'apple-user');
+        return { connected: true, synced: true };
+      },
+    },
+  });
+  await assert.rejects(
+    apple.pluginRegistry.execute('apple-cloud', 'connect', { userId: 'apple-user' }),
+    /requires an authenticated session/,
+  );
+  assert.deepEqual(await apple.pluginRegistry.execute('apple-sign-in', 'sign-in'), {
+    user: { id: 'apple-user', email: 'user@example.test' },
+  });
+  assert.deepEqual(await apple.pluginRegistry.execute('apple-cloud', 'connect'), {
+    connected: true,
+  });
+  assert.deepEqual(await apple.pluginRegistry.execute('apple-cloud', 'get-status'), {
+    connected: true,
+  });
+  assert.deepEqual(await apple.pluginRegistry.execute('apple-cloud', 'sync'), {
+    connected: true,
+    synced: true,
+  });
+  assert.deepEqual(await apple.pluginRegistry.execute('apple-cloud', 'disconnect'), {
+    connected: false,
+  });
+  await apple.pluginRegistry.execute('apple-sign-in', 'sign-out');
+  await assert.rejects(
+    apple.pluginRegistry.execute('apple-cloud', 'get-status'),
+    /requires an authenticated session/,
+  );
+
   const runtime = createAssistantRuntime({
     permissions: [
       'openclaw:manage',

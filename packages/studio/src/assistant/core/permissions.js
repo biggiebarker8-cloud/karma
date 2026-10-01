@@ -7,6 +7,8 @@ export const PERMISSIONS = {
   AMAZON_WRITE: 'amazon:write',
   CANVA_WRITE: 'canva:write',
   MICROSOFT_HUB_READ: 'microsoft-hub:read',
+  APPLE_SIGN_IN: 'apple:sign-in',
+  APPLE_CLOUD_CONNECT: 'apple:cloud-connect',
   INTERNET_READ: 'internet:read',
   MEMORY_WRITE: 'memory:write',
   VOICE_INPUT: 'voice:input',
