@@ -1,10 +1,20 @@
 import { parseAndValidateJson } from './jsonMode.js';
-import { resolveClaudeModel } from './claudeModels.js';
+import { isClaudeModel, resolveModel } from './claudeModels.js';
 
-export function createModelGateway({ transport, auditLogger }) {
+export function createModelGateway({ transport, claudeTransport, auditLogger }) {
   if (typeof transport !== 'function') {
     throw new Error('Model gateway requires a transport function');
   }
+
+  const getTransport = (model) => {
+    if (isClaudeModel(model)) {
+      if (typeof claudeTransport !== 'function') {
+        throw new Error('Claude model requests require a Claude transport');
+      }
+      return claudeTransport;
+    }
+    return transport;
+  };
 
   return {
     async complete({
@@ -15,10 +25,10 @@ export function createModelGateway({ transport, auditLogger }) {
       schema,
       metadata = {},
     }) {
-      const selectedModel = resolveClaudeModel(model, fallbackModel);
+      const selectedModel = resolveModel(model, fallbackModel);
       auditLogger?.log?.({ type: 'model.request', model: selectedModel });
 
-      const response = await transport({
+      const response = await getTransport(selectedModel)({
         model: selectedModel,
         prompt,
         jsonMode,
@@ -43,7 +53,7 @@ export function createModelGateway({ transport, auditLogger }) {
           reason: error.message,
         });
 
-        const fallbackResponse = await transport({
+        const fallbackResponse = await getTransport(fallbackModel)({
           model: fallbackModel,
           prompt,
           jsonMode: true,
@@ -54,4 +64,3 @@ export function createModelGateway({ transport, auditLogger }) {
     },
   };
 }
-

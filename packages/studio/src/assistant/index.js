@@ -4,6 +4,8 @@ import { createRateLimiter } from './core/rateLimiter.js';
 import { createAuditLogger } from './core/auditLogger.js';
 import { hasPermission } from './core/permissions.js';
 import { createModelGateway } from './model/modelGateway.js';
+import { createOpenAITransport } from './model/openaiTransport.js';
+import { createClaudeTransport } from './model/claudeTransport.js';
 import { createHearingAdapter } from './voice/hearingAdapter.js';
 import { createVoiceAdapter } from './voice/voiceAdapter.js';
 import { createTurnController } from './voice/turnControls.js';
@@ -36,6 +38,7 @@ export function createAssistantRuntime({
   fetchReferences,
   allowlistDomains = [],
   installLinks = {},
+  claudeTransport,
 }) {
   const auditLogger = createAuditLogger();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
@@ -73,7 +76,9 @@ export function createAssistantRuntime({
   ].forEach((plugin) => pluginRegistry.register(plugin));
 
   const modelGateway = createModelGateway({
-    transport: modelTransport,
+    transport: modelTransport ?? createOpenAITransport(),
+    claudeTransport: claudeTransport
+      ?? (process.env.ANTHROPIC_API_KEY ? createClaudeTransport() : undefined),
     auditLogger,
   });
 
