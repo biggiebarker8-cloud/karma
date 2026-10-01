@@ -16,7 +16,7 @@ export function createOpenAITransport({
     const response = await fetchImpl(endpoint, {
       method: 'POST',
       headers: {
-        authorization: `******
+        authorization: 'Bearer ' + apiKey,
         'content-type': 'application/json',
       },
       body: JSON.stringify({

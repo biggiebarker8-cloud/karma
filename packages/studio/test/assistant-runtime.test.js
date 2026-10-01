@@ -39,7 +39,8 @@ test('OpenAI transport sends a server-side key and returns chat content', async 
   const result = await transport({ model: 'gpt-5', prompt: 'Help me build' });
 
   assert.equal(result, 'Hello from GPT');
-  assert.equal(request.options.headers.authorization, '******');
+  assert.equal(request.options.headers.authorization.startsWith('Bearer '), true);
+  assert.equal(request.options.headers.authorization.endsWith('test-key'), true);
   assert.deepStrictEqual(JSON.parse(request.options.body), {
     model: 'gpt-5',
     messages: [{ role: 'user', content: 'Help me build' }],
