@@ -16,8 +16,9 @@ export function isOpenAIModel(model) {
   return typeof model === 'string' && model.startsWith('gpt-');
 }
 
-export function resolveModel(requestedModel, fallbackModel = 'claude-sonnet-5') {
-  if (SUPPORTED_CLAUDE_MODELS.includes(requestedModel) || SUPPORTED_OPENAI_MODELS.includes(requestedModel)) {
+export function resolveModel(requestedModel, fallbackModel = 'gpt-5') {
+  if (SUPPORTED_CLAUDE_MODELS.includes(requestedModel)
+    || SUPPORTED_OPENAI_MODELS.includes(requestedModel)) {
     return requestedModel;
   }
 
