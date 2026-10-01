@@ -7,6 +7,7 @@ import { PERMISSIONS } from '../src/assistant/core/permissions.js';
 import { createModelGateway } from '../src/assistant/model/modelGateway.js';
 import { createOpenAITransport } from '../src/assistant/model/openaiTransport.js';
 import { createClaudeTransport } from '../src/assistant/model/claudeTransport.js';
+import { createGitHubTransport } from '../src/assistant/github/githubTransport.js';
 
 function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS]) {
   return canonicalRuntime({
@@ -57,18 +58,8 @@ test('model gateway routes Claude requests to the Claude transport', async () =>
   assert.equal(calls[0][1].model, 'claude-sonnet-5');
 });
 
-test('OpenAI and Claude transports use compatible request formats', async () => {
-  let openAIRequest;
+test('Claude transport uses its API key and returns message content', async () => {
   let claudeRequest;
-  const openAI = createOpenAITransport({
-    apiKey: 'openai-test-key',
-    fetchImpl: async (url, options) => {
-      openAIRequest = { url, options };
-      return { ok: true, async json() {
-        return { choices: [{ message: { content: 'openai response' } }] };
-      } };
-    },
-  });
   const claude = createClaudeTransport({
     apiKey: 'claude-test-key',
     fetchImpl: async (url, options) => {
@@ -79,9 +70,7 @@ test('OpenAI and Claude transports use compatible request formats', async () => 
     },
   });
 
-  assert.equal(await openAI({ model: 'gpt-5', prompt: 'Hello' }), 'openai response');
   assert.equal(await claude({ model: 'claude-sonnet-5', prompt: 'Hello' }), 'claude response');
-  assert.equal(JSON.parse(openAIRequest.options.body).messages[0].role, 'user');
   assert.equal(JSON.parse(claudeRequest.options.body).messages[0].role, 'user');
   assert.equal(claudeRequest.options.headers['x-api-key'], 'claude-test-key');
 });
@@ -92,6 +81,100 @@ test('Claude requests fail clearly without a Claude transport', async () => {
   await assert.rejects(
     () => gateway.complete({ model: 'claude-haiku-4.5', prompt: 'Hello' }),
     /require a Claude transport/,
+  );
+});
+
+test('OpenAI transport sends a server-side key and returns chat content', async () => {
+  let request;
+  const transport = createOpenAITransport({
+    apiKey: 'test-key',
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return {
+        ok: true,
+        async json() {
+          return { choices: [{ message: { content: 'Hello from GPT' } }] };
+        },
+      };
+    },
+  });
+
+  const result = await transport({ model: 'gpt-5', prompt: 'Help me build' });
+
+  assert.equal(result, 'Hello from GPT');
+  assert.equal(request.options.headers.authorization.startsWith('Bearer '), true);
+  assert.equal(request.options.headers.authorization.endsWith('test-key'), true);
+  assert.deepStrictEqual(JSON.parse(request.options.body), {
+    model: 'gpt-5',
+    messages: [{ role: 'user', content: 'Help me build' }],
+  });
+});
+
+test('OpenAI transport requests JSON mode and reports API errors', async () => {
+  let body;
+  const transport = createOpenAITransport({
+    apiKey: 'test-key',
+    fetchImpl: async (_url, options) => {
+      body = JSON.parse(options.body);
+      return { ok: false, status: 429 };
+    },
+  });
+
+  await assert.rejects(
+    () => transport({ model: 'gpt-5-mini', prompt: 'Return JSON', jsonMode: true }),
+    /OpenAI request failed with status 429/,
+  );
+  assert.deepStrictEqual(body.response_format, { type: 'json_object' });
+});
+
+test('OpenAI transport requires a server-side API key', () => {
+  assert.throws(
+    () => createOpenAITransport({ apiKey: '', fetchImpl: async () => ({}) }),
+    /requires OPENAI_API_KEY/,
+  );
+});
+
+test('GitHub transport reads repository data with a server-side token', async () => {
+  let request;
+  const transport = createGitHubTransport({
+    token: 'test-token',
+    endpoint: 'https://github.test',
+    fetchImpl: async (url, options) => {
+      request = { url: String(url), options };
+      return { ok: true, async json() { return { full_name: 'owner/repo' }; } };
+    },
+  });
+
+  const result = await transport({ owner: 'owner', repo: 'repo', path: '/contents/src/index.js' });
+
+  assert.equal(result.full_name, 'owner/repo');
+  assert.equal(request.url, 'https://github.test/repos/owner/repo/contents/src/index.js');
+  assert.equal(request.options.headers.authorization.startsWith('Bearer '), true);
+});
+
+test('GitHub repository plugin exposes read-only actions through the runtime', async () => {
+  const runtime = canonicalRuntime({
+    modelTransport: async () => 'ok',
+    permissions: [PERMISSIONS.GITHUB_READ],
+    githubTransport: async ({ path }) => ({ path }),
+  });
+
+  const result = await runtime.pluginRegistry.execute('github', 'get-file', {
+    owner: 'owner',
+    repo: 'repo',
+    path: 'README.md',
+  });
+
+  assert.deepStrictEqual(result, { path: '/contents/README.md' });
+  assert.equal(runtime.pluginRegistry.isAvailable('github'), true);
+});
+
+test('GitHub access is unavailable without the read permission', async () => {
+  const runtime = createRuntime([]);
+
+  await assert.rejects(
+    () => runtime.pluginRegistry.execute('github', 'get-repository', { owner: 'owner', repo: 'repo' }),
+    (error) => error.code === 'PLUGIN_UNAVAILABLE',
   );
 });
 
