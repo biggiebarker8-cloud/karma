@@ -5,6 +5,7 @@ import { createAssistantRuntime as canonicalRuntime } from '../src/assistant/ind
 import { createAssistantRuntime as compatibilityRuntime } from '../src/assistant/index.mjs';
 import { PERMISSIONS } from '../src/assistant/core/permissions.js';
 import { createOpenAITransport } from '../src/assistant/model/openaiTransport.js';
+import { createGitHubTransport } from '../src/assistant/github/githubTransport.js';
 
 function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS]) {
   return canonicalRuntime({
@@ -68,6 +69,50 @@ test('OpenAI transport requires a server-side API key', () => {
   assert.throws(
     () => createOpenAITransport({ apiKey: '', fetchImpl: async () => ({}) }),
     /requires OPENAI_API_KEY/,
+  );
+});
+
+test('GitHub transport reads repository data with a server-side token', async () => {
+  let request;
+  const transport = createGitHubTransport({
+    token: 'test-token',
+    endpoint: 'https://github.test',
+    fetchImpl: async (url, options) => {
+      request = { url: String(url), options };
+      return { ok: true, async json() { return { full_name: 'owner/repo' }; } };
+    },
+  });
+
+  const result = await transport({ owner: 'owner', repo: 'repo', path: '/contents/src/index.js' });
+
+  assert.equal(result.full_name, 'owner/repo');
+  assert.equal(request.url, 'https://github.test/repos/owner/repo/contents/src/index.js');
+  assert.equal(request.options.headers.authorization.startsWith('Bearer '), true);
+});
+
+test('GitHub repository plugin exposes read-only actions through the runtime', async () => {
+  const runtime = canonicalRuntime({
+    modelTransport: async () => 'ok',
+    permissions: [PERMISSIONS.GITHUB_READ],
+    githubTransport: async ({ path }) => ({ path }),
+  });
+
+  const result = await runtime.pluginRegistry.execute('github', 'get-file', {
+    owner: 'owner',
+    repo: 'repo',
+    path: 'README.md',
+  });
+
+  assert.deepStrictEqual(result, { path: '/contents/README.md' });
+  assert.equal(runtime.pluginRegistry.isAvailable('github'), true);
+});
+
+test('GitHub access is unavailable without the read permission', async () => {
+  const runtime = createRuntime([]);
+
+  await assert.rejects(
+    () => runtime.pluginRegistry.execute('github', 'get-repository', { owner: 'owner', repo: 'repo' }),
+    (error) => error.code === 'PLUGIN_UNAVAILABLE',
   );
 });
 
