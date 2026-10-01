@@ -1,19 +1,23 @@
-import Testing
 import XCTest
 @testable import KarmaCore
 
-@Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
-    // Swift Testing Documentation
-    // https://swiftpackageindex.com/swiftlang/swift-testing/documentation
-}
-
 final class KarmaCoreTests: XCTestCase {
-    func testExample() throws {
-        // XCTest Documentation
-        // https://developer.apple.com/documentation/xctest
+    func testAcceptsHTTPSAddress() {
+        XCTAssertEqual(
+            SecureWebAddress.parse("  https://openclaw.example.org/app  ")?.absoluteString,
+            "https://openclaw.example.org/app"
+        )
+    }
 
-        // Defining Test Cases and Test Methods
-        // https://developer.apple.com/documentation/xctest/defining_test_cases_and_test_methods
+    func testRejectsUnsafeAddresses() {
+        for address in [
+            "", "http://openclaw.example.org", "javascript:alert(1)",
+            "https://user@openclaw.example.org",
+            "https://openclaw.example.org/?token=secret",
+            "https://openclaw.example.org/#token",
+            "https:///app"
+        ] {
+            XCTAssertNil(SecureWebAddress.parse(address), address)
+        }
     }
 }
