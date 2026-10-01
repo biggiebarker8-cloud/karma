@@ -75,6 +75,22 @@ async function main() {
     requestedBy: 'local-smoke-test',
     pageId: 'visual-suite',
   });
+  const shopifyCapabilities = await runtime.pluginRegistry.execute(
+    'shopify',
+    'describe-capabilities',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const shopifyOverview = await runtime.pluginRegistry.execute('shopify', 'get-store-overview', {
+    requestedBy: 'local-smoke-test',
+  });
+  const amazonCapabilities = await runtime.pluginRegistry.execute(
+    'amazon',
+    'describe-capabilities',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const amazonOverview = await runtime.pluginRegistry.execute('amazon', 'get-store-overview', {
+    requestedBy: 'local-smoke-test',
+  });
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
@@ -88,6 +104,16 @@ async function main() {
   console.log('Microsoft Copilots Page:', copilotsPage.page.title, copilotsPage.page.cards.length);
   console.log('Microsoft Contact Page:', contactPage.page.title, contactPage.page.cards.length);
   console.log('Microsoft Visual Suite Page:', developerPage.page.title, developerPage.page.cards.length);
+  console.log(
+    'Shopify supported actions:',
+    JSON.stringify(shopifyCapabilities.supportedActions, null, 2),
+  );
+  console.log('Shopify store overview:', JSON.stringify(shopifyOverview.overview, null, 2));
+  console.log(
+    'Amazon supported actions:',
+    JSON.stringify(amazonCapabilities.supportedActions, null, 2),
+  );
+  console.log('Amazon store overview:', JSON.stringify(amazonOverview.overview, null, 2));
 }
 
 main().catch((error) => {
