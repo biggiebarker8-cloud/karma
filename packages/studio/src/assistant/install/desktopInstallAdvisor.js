@@ -62,6 +62,21 @@ const DEFAULT_OPTIONS = {
   },
 };
 
+function getMobileStoreLinks(installLinks = {}) {
+  return [
+    {
+      platform: 'ios',
+      store: 'Apple App Store',
+      url: installLinks.ios || null,
+    },
+    {
+      platform: 'android',
+      store: 'Google Play Store',
+      url: installLinks.android || null,
+    },
+  ].filter((entry) => Boolean(entry.url));
+}
+
 export function createDesktopInstallAdvisor({
   appName = 'Karma',
   installLinks = {},
@@ -72,6 +87,10 @@ export function createDesktopInstallAdvisor({
       const deviceProfile = detectDeviceProfile(userAgent);
       const profileOptions = DEFAULT_OPTIONS[deviceProfile] || DEFAULT_OPTIONS.unknown;
       const nativeLink = installLinks[deviceProfile] || null;
+      const mobileStoreLinks =
+        profileOptions.recommendedPath === 'manual_add_to_home_screen'
+          ? getMobileStoreLinks(installLinks)
+          : [];
       const autoInstallEnabled = Boolean(
         profileOptions.autoInstallAvailable && (supportsInstallPrompt || nativeLink),
       );
@@ -82,6 +101,7 @@ export function createDesktopInstallAdvisor({
         autoInstallEnabled,
         recommendedPath: profileOptions.recommendedPath,
         nativeInstallerUrl: nativeLink,
+        mobileStoreLinks,
         instructions: profileOptions.instructions,
         notes:
           deviceProfile === 'ios'
@@ -99,4 +119,3 @@ export function createDesktopInstallAdvisor({
     },
   };
 }
-
