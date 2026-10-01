@@ -13,6 +13,21 @@ This repository now includes a foundation for:
 - Memory scopes (session/user/task), tone profiles, and accessibility profiles
 - Continuous learning feedback capture
 - Internet reference retrieval with domain allowlisting and required citations
+- Read-only GitHub repository access for repository metadata, files, and code search
+
+## ChatGPT setup
+
+The assistant can use OpenAI GPT models through the server-side model transport. Set
+`OPENAI_API_KEY` in the server environment before creating the default runtime; never
+put this key in browser code or client-exposed configuration. Supported model names
+include `gpt-5` and `gpt-5-mini`.
+
+## GitHub repository setup
+
+The GitHub connector is read-only and permission-gated. Set `GITHUB_TOKEN` only in
+the server environment, grant the assistant `github:read`, and enable
+`githubEnabled`. Use a fine-grained token limited to the repositories it should
+help with; never expose the token in browser code or client configuration.
 
 ## Entry point
 

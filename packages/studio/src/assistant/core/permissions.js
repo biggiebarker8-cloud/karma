@@ -16,6 +16,7 @@ export const PERMISSIONS = {
   DESIGN_COMICS: 'design:comics',
   EDIT_MOVIE_CLIPS: 'edit:movie-clips',
   INSTALL_GUIDE_READ: 'install-guide:read',
+  GITHUB_READ: 'github:read',
 };
 
 export function hasPermission(grantedPermissions = [], requiredPermission) {

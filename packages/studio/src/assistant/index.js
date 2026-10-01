@@ -4,6 +4,7 @@ import { createRateLimiter } from './core/rateLimiter.js';
 import { createAuditLogger } from './core/auditLogger.js';
 import { hasPermission } from './core/permissions.js';
 import { createModelGateway } from './model/modelGateway.js';
+import { createOpenAITransport } from './model/openaiTransport.js';
 import { createHearingAdapter } from './voice/hearingAdapter.js';
 import { createVoiceAdapter } from './voice/voiceAdapter.js';
 import { createTurnController } from './voice/turnControls.js';
@@ -26,6 +27,8 @@ import { createHoodieDesignPlugin } from './plugins/hoodieDesignPlugin.js';
 import { createComicsPlugin } from './plugins/comicsPlugin.js';
 import { createMovieClipsPlugin } from './plugins/movieClipsPlugin.js';
 import { createInstallExperiencePlugin } from './plugins/installExperiencePlugin.js';
+import { createGitHubPlugin } from './plugins/githubPlugin.js';
+import { createGitHubTransport } from './github/githubTransport.js';
 
 export function createAssistantRuntime({
   featureFlagOverrides = {},
@@ -37,6 +40,7 @@ export function createAssistantRuntime({
   fetchReferences,
   allowlistDomains = [],
   installLinks = {},
+  githubTransport,
 }) {
   const auditLogger = createAuditLogger();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
@@ -56,6 +60,10 @@ export function createAssistantRuntime({
   });
 
   const pluginDeps = { rateLimiter, auditLogger };
+  let configuredGitHubTransport = githubTransport;
+  if (!configuredGitHubTransport && process.env.GITHUB_TOKEN) {
+    configuredGitHubTransport = createGitHubTransport();
+  }
   [
     createOpenclawPlugin(pluginDeps),
     createMicrosoftHubPlugin(pluginDeps),
@@ -72,10 +80,14 @@ export function createAssistantRuntime({
       ...pluginDeps,
       installAdvisor,
     }),
+    createGitHubPlugin({
+      ...pluginDeps,
+      githubTransport: configuredGitHubTransport,
+    }),
   ].forEach((plugin) => pluginRegistry.register(plugin));
 
   const modelGateway = createModelGateway({
-    transport: modelTransport,
+    transport: modelTransport ?? createOpenAITransport(),
     auditLogger,
   });
 

@@ -12,6 +12,7 @@ const DEFAULT_FLAGS = {
   continuousLearningEnabled: true,
   internetReferencesEnabled: true,
   accessibilityModeEnabled: true,
+  githubEnabled: true,
 };
 
 export function createFeatureFlags(overrides = {}) {
