@@ -16,6 +16,8 @@ import { createVisionAdapter } from './vision/visionAdapter.js';
 import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor.js';
 import { createOpenclawPlugin } from './plugins/openclawPlugin.js';
 import { createMicrosoftHubPlugin } from './plugins/microsoftHubPlugin.js';
+import { createAppleSignInPlugin } from './plugins/appleSignInPlugin.js';
+import { createAppleCloudPlugin } from './plugins/appleCloudPlugin.js';
 import { createTikTokPlugin } from './plugins/tiktokPlugin.js';
 import { createFacebookPlugin } from './plugins/facebookPlugin.js';
 import { createInstagramPlugin } from './plugins/instagramPlugin.js';
@@ -37,6 +39,8 @@ export function createAssistantRuntime({
   fetchReferences,
   allowlistDomains = [],
   installLinks = {},
+  appleAuth,
+  appleCloud,
 }) {
   const auditLogger = createAuditLogger();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
@@ -59,6 +63,8 @@ export function createAssistantRuntime({
   [
     createOpenclawPlugin(pluginDeps),
     createMicrosoftHubPlugin(pluginDeps),
+    createAppleSignInPlugin({ ...pluginDeps, appleAuth }),
+    createAppleCloudPlugin({ ...pluginDeps, appleAuth, appleCloud }),
     createTikTokPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),
