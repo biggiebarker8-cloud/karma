@@ -14,6 +14,7 @@ This repository now includes a foundation for:
 - Continuous learning feedback capture
 - Internet reference retrieval with domain allowlisting and required citations
 - Read-only GitHub repository access for repository metadata, files, and code search
+- Separate Karma and GPT-powered Collaborator profiles, bounded Together replies, and approval-gated tool execution
 
 ## ChatGPT setup
 
@@ -28,6 +29,29 @@ The GitHub connector is read-only and permission-gated. Set `GITHUB_TOKEN` only 
 the server environment, grant the assistant `github:read`, and enable
 `githubEnabled`. Use a fine-grained token limited to the repositories it should
 help with; never expose the token in browser code or client configuration.
+
+## Two-assistant runtime
+
+`runtime.assistantProfiles` exposes `karma`, `collaborator`, and `together` chat
+modes. Karma uses Claude and Collaborator uses GPT; Together returns one labeled
+reply from each, with an optional single review. Profile instructions, histories,
+feedback, and examples are kept separate in the shared memory store. Only facts
+reviewed by Dan are included in the shared business knowledge supplied to prompts.
+
+Tool calls should go through `assistantProfiles.executeTool`; the plugin registry
+rechecks its permission gates for every execution. Actions matching the runtime's
+sensitive-action policy require an exact, single-use approval requested for one
+profile and action. The runtime defaults to denying Dan-only changes and approvals
+unless its `authorizeDanAction` callback confirms the trusted server-side user
+session. Assistants must not be given access to that callback or `approveAction`.
+API keys remain server-side.
+
+This is a runtime foundation, not a complete chat product: profile history is
+currently retained only by the in-memory store and expires with its configured
+retention, and no chat/settings/approval UI or authenticated Dan identity
+integration is included. A host application must supply durable storage and
+authenticate Dan before allowing edits, knowledge reviews, or approvals.
+This does not import ChatGPT's private memory or transfer an existing assistant.
 
 ## Entry point
 

@@ -5,6 +5,7 @@ export function createPluginRegistry({
   featureFlags,
   grantedPermissions = [],
   auditLogger,
+  authorizeAction,
 } = {}) {
   const plugins = new Map();
 
@@ -74,6 +75,7 @@ export function createPluginRegistry({
       }
 
       const plugin = plugins.get(pluginId);
+      await authorizeAction?.({ pluginId, action, context });
       auditLogger?.log?.({ type: 'plugin.execute', pluginId, action });
       return plugin.execute(action, context);
     },

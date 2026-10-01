@@ -30,6 +30,8 @@ import { createMovieClipsPlugin } from './plugins/movieClipsPlugin.js';
 import { createInstallExperiencePlugin } from './plugins/installExperiencePlugin.js';
 import { createGitHubPlugin } from './plugins/githubPlugin.js';
 import { createGitHubTransport } from './github/githubTransport.js';
+import { createActionApprovals } from './collaboration/actionApprovals.js';
+import { createAssistantProfiles } from './collaboration/assistantProfiles.js';
 
 export function createAssistantRuntime({
   featureFlagOverrides = {},
@@ -43,16 +45,25 @@ export function createAssistantRuntime({
   installLinks = {},
   claudeTransport,
   githubTransport,
+  sharedBusinessKnowledge = [],
+  authorizeDanAction = () => false,
 }) {
   const auditLogger = createAuditLogger();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
   const permissionChecker = (permission) => hasPermission(permissions, permission);
   const rateLimiter = createRateLimiter();
+  const actionApprovals = createActionApprovals({ auditLogger, authorizeDanAction });
 
   const pluginRegistry = createPluginRegistry({
     featureFlags,
     grantedPermissions: permissions,
     auditLogger,
+    authorizeAction: ({ pluginId, action, context = {} }) => actionApprovals.authorize({
+      profile: context.assistantProfile,
+      pluginId,
+      action,
+      context,
+    }),
   });
 
   const installAdvisor = createDesktopInstallAdvisor({
@@ -94,6 +105,16 @@ export function createAssistantRuntime({
       ?? (process.env.ANTHROPIC_API_KEY ? createClaudeTransport() : undefined),
     auditLogger,
   });
+  const memoryStore = createMemoryStore({ auditLogger });
+  const assistantProfiles = createAssistantProfiles({
+    memoryStore,
+    modelGateway,
+    pluginRegistry,
+    actionApprovals,
+    auditLogger,
+    businessKnowledge: sharedBusinessKnowledge,
+    authorizeDanAction,
+  });
 
   const hearingAdapter = createHearingAdapter({
     speechToText,
@@ -112,9 +133,7 @@ export function createAssistantRuntime({
     permissionChecker,
     auditLogger,
   });
-
   const turnController = createTurnController();
-  const memoryStore = createMemoryStore({ auditLogger });
   const learningStore = createContinuousLearningStore({ auditLogger });
   const references = createInternetReferenceRetriever({
     fetchReferences,
@@ -128,11 +147,12 @@ export function createAssistantRuntime({
     featureFlags,
     pluginRegistry,
     modelGateway,
+    memoryStore,
+    assistantProfiles,
     hearingAdapter,
     voiceAdapter,
     visionAdapter,
     turnController,
-    memoryStore,
     learningStore,
     references,
     installAdvisor,
