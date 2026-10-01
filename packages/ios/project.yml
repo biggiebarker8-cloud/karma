@@ -1,0 +1,26 @@
+name: Karma
+options:
+  bundleIdPrefix: com.example
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+packages:
+  KarmaCore:
+    path: .
+targets:
+  Karma:
+    type: application
+    platform: iOS
+    sources:
+      - path: App
+    dependencies:
+      - package: KarmaCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.karma
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: NO
