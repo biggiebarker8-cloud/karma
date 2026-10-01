@@ -13,6 +13,13 @@ This repository now includes a foundation for:
 - Continuous learning feedback capture
 - Internet reference retrieval with domain allowlisting and required citations
 
+## ChatGPT setup
+
+The assistant can use OpenAI GPT models through the server-side model transport. Set
+`OPENAI_API_KEY` in the server environment before creating the default runtime; never
+put this key in browser code or client-exposed configuration. Supported model names
+include `gpt-5` and `gpt-5-mini`.
+
 ## Entry point
 
 - `/home/runner/work/karma/karma/packages/studio/src/assistant/index.js`

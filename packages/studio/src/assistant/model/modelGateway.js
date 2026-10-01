@@ -1,5 +1,5 @@
 import { parseAndValidateJson } from './jsonMode.js';
-import { resolveClaudeModel } from './claudeModels.js';
+import { resolveModel } from './claudeModels.js';
 
 export function createModelGateway({ transport, auditLogger }) {
   if (typeof transport !== 'function') {
@@ -15,7 +15,7 @@ export function createModelGateway({ transport, auditLogger }) {
       schema,
       metadata = {},
     }) {
-      const selectedModel = resolveClaudeModel(model, fallbackModel);
+      const selectedModel = resolveModel(model, fallbackModel);
       auditLogger?.log?.({ type: 'model.request', model: selectedModel });
 
       const response = await transport({
@@ -54,4 +54,3 @@ export function createModelGateway({ transport, auditLogger }) {
     },
   };
 }
-

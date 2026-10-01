@@ -4,6 +4,7 @@ import test from 'node:test';
 import { createAssistantRuntime as canonicalRuntime } from '../src/assistant/index.js';
 import { createAssistantRuntime as compatibilityRuntime } from '../src/assistant/index.mjs';
 import { PERMISSIONS } from '../src/assistant/core/permissions.js';
+import { createOpenAITransport } from '../src/assistant/model/openaiTransport.js';
 
 function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS]) {
   return canonicalRuntime({
@@ -18,6 +19,55 @@ function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS]) {
 
 test('compatibility entrypoint exports the canonical runtime factory', () => {
   assert.strictEqual(compatibilityRuntime, canonicalRuntime);
+});
+
+test('OpenAI transport sends a server-side key and returns chat content', async () => {
+  let request;
+  const transport = createOpenAITransport({
+    apiKey: 'test-key',
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return {
+        ok: true,
+        async json() {
+          return { choices: [{ message: { content: 'Hello from GPT' } }] };
+        },
+      };
+    },
+  });
+
+  const result = await transport({ model: 'gpt-5', prompt: 'Help me build' });
+
+  assert.equal(result, 'Hello from GPT');
+  assert.equal(request.options.headers.authorization, '******');
+  assert.deepStrictEqual(JSON.parse(request.options.body), {
+    model: 'gpt-5',
+    messages: [{ role: 'user', content: 'Help me build' }],
+  });
+});
+
+test('OpenAI transport requests JSON mode and reports API errors', async () => {
+  let body;
+  const transport = createOpenAITransport({
+    apiKey: 'test-key',
+    fetchImpl: async (_url, options) => {
+      body = JSON.parse(options.body);
+      return { ok: false, status: 429 };
+    },
+  });
+
+  await assert.rejects(
+    () => transport({ model: 'gpt-5-mini', prompt: 'Return JSON', jsonMode: true }),
+    /OpenAI request failed with status 429/,
+  );
+  assert.deepStrictEqual(body.response_format, { type: 'json_object' });
+});
+
+test('OpenAI transport requires a server-side API key', () => {
+  assert.throws(
+    () => createOpenAITransport({ apiKey: '', fetchImpl: async () => ({}) }),
+    /requires OPENAI_API_KEY/,
+  );
 });
 
 test('comics plugin creates an approval-aware carousel brief through the canonical registry', async () => {
