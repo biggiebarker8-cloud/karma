@@ -1,8 +1,13 @@
 export const PERMISSIONS = {
   OPENCLAW_MANAGE: 'openclaw:manage',
   POST_TIKTOK: 'post:tiktok',
+  POST_TIKTOK_BUSINESS: 'post:tiktok-business',
+  TIKTOK_ADS_WRITE: 'tiktok-ads:write',
   POST_FACEBOOK: 'post:facebook',
   POST_INSTAGRAM: 'post:instagram',
+  POST_WHATSAPP_BUSINESS: 'post:whatsapp-business',
+  POST_REDDIT: 'post:reddit',
+  META_BUSINESS_READ: 'meta-business:read',
   SHOPIFY_WRITE: 'shopify:write',
   AMAZON_WRITE: 'amazon:write',
   CANVA_WRITE: 'canva:write',
