@@ -12,6 +12,7 @@ export function createAppleCloudPlugin({ appleAuth, appleCloud, ...deps }) {
         'connect': 'connect',
         'get-status': 'getStatus',
         'disconnect': 'disconnect',
+        'sync': 'sync',
       };
       const method = methods[action];
       if (!method) {
@@ -25,7 +26,10 @@ export function createAppleCloudPlugin({ appleAuth, appleCloud, ...deps }) {
         throw new Error('Apple cloud connection requires an authenticated session');
       }
       const result = await appleCloud[method](session);
-      return { connected: action === 'disconnect' ? false : result?.connected === true };
+      return {
+        connected: action === 'disconnect' ? false : result?.connected === true,
+        ...(action === 'sync' ? { synced: result?.synced === true } : {}),
+      };
     },
   });
 }
