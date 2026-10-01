@@ -6,8 +6,13 @@ async function main() {
       'openclaw:manage',
       'microsoft-hub:read',
       'post:tiktok',
+      'post:tiktok-business',
+      'tiktok-ads:write',
       'post:facebook',
       'post:instagram',
+      'post:whatsapp-business',
+      'post:reddit',
+      'meta-business:read',
       'shopify:write',
       'amazon:write',
       'canva:write',
@@ -91,6 +96,36 @@ async function main() {
   const amazonOverview = await runtime.pluginRegistry.execute('amazon', 'get-store-overview', {
     requestedBy: 'local-smoke-test',
   });
+  const metaBusinessOverview = await runtime.pluginRegistry.execute(
+    'meta-business',
+    'get-business-account-overview',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const whatsappProfile = await runtime.pluginRegistry.execute(
+    'whatsapp-business',
+    'get-business-profile',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const redditOverview = await runtime.pluginRegistry.execute(
+    'reddit',
+    'get-business-account-overview',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const tiktokPersonalOverview = await runtime.pluginRegistry.execute(
+    'tiktok',
+    'get-account-overview',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const tiktokBusinessOverview = await runtime.pluginRegistry.execute(
+    'tiktok-business',
+    'get-account-overview',
+    { requestedBy: 'local-smoke-test' },
+  );
+  const tiktokAdsOverview = await runtime.pluginRegistry.execute(
+    'tiktok-ads',
+    'get-ads-account-overview',
+    { requestedBy: 'local-smoke-test' },
+  );
 
   console.log('Assistant runtime is runnable.');
   console.log(`Plugin: ${plugin.id}`);
@@ -114,6 +149,12 @@ async function main() {
     JSON.stringify(amazonCapabilities.supportedActions, null, 2),
   );
   console.log('Amazon store overview:', JSON.stringify(amazonOverview.overview, null, 2));
+  console.log('Meta Business overview:', JSON.stringify(metaBusinessOverview.overview, null, 2));
+  console.log('WhatsApp Business profile:', JSON.stringify(whatsappProfile.profile, null, 2));
+  console.log('Reddit business overview:', JSON.stringify(redditOverview.overview, null, 2));
+  console.log('TikTok personal overview:', JSON.stringify(tiktokPersonalOverview.overview, null, 2));
+  console.log('TikTok business overview:', JSON.stringify(tiktokBusinessOverview.overview, null, 2));
+  console.log('TikTok ads overview:', JSON.stringify(tiktokAdsOverview.overview, null, 2));
 }
 
 main().catch((error) => {

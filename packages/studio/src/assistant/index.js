@@ -17,8 +17,13 @@ import { createDesktopInstallAdvisor } from './install/desktopInstallAdvisor.js'
 import { createOpenclawPlugin } from './plugins/openclawPlugin.js';
 import { createMicrosoftHubPlugin } from './plugins/microsoftHubPlugin.js';
 import { createTikTokPlugin } from './plugins/tiktokPlugin.js';
+import { createTikTokBusinessPlugin } from './plugins/tiktokBusinessPlugin.js';
+import { createTikTokAdsPlugin } from './plugins/tiktokAdsPlugin.js';
 import { createFacebookPlugin } from './plugins/facebookPlugin.js';
 import { createInstagramPlugin } from './plugins/instagramPlugin.js';
+import { createWhatsappBusinessPlugin } from './plugins/whatsappBusinessPlugin.js';
+import { createMetaBusinessPlugin } from './plugins/metaBusinessPlugin.js';
+import { createRedditPlugin } from './plugins/redditPlugin.js';
 import { createShopifyPlugin } from './plugins/shopifyPlugin.js';
 import { createAmazonPlugin } from './plugins/amazonPlugin.js';
 import { createCanvaPlugin } from './plugins/canvaPlugin.js';
@@ -60,8 +65,13 @@ export function createAssistantRuntime({
     createOpenclawPlugin(pluginDeps),
     createMicrosoftHubPlugin(pluginDeps),
     createTikTokPlugin(pluginDeps),
+    createTikTokBusinessPlugin(pluginDeps),
+    createTikTokAdsPlugin(pluginDeps),
     createFacebookPlugin(pluginDeps),
     createInstagramPlugin(pluginDeps),
+    createWhatsappBusinessPlugin(pluginDeps),
+    createMetaBusinessPlugin(pluginDeps),
+    createRedditPlugin(pluginDeps),
     createShopifyPlugin(pluginDeps),
     createAmazonPlugin(pluginDeps),
     createCanvaPlugin(pluginDeps),

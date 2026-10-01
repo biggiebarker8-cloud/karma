@@ -1,78 +1,78 @@
 import { PERMISSIONS } from '../core/permissions.js';
 import { createScopedIntegrationPlugin } from './createScopedIntegrationPlugin.js';
 
-const TIKTOK_PERSONAL_SUPPORTED_ACTIONS = Object.freeze([
+const TIKTOK_BUSINESS_SUPPORTED_ACTIONS = Object.freeze([
   'describe-capabilities',
   'get-account-overview',
   'create-post',
-  'get-video-insights',
+  'get-account-insights',
 ]);
 
 function getAccountOverview(context = {}) {
   return {
-    account: context.account || 'default-tiktok-personal-account',
-    sections: ['posts', 'video-insights'],
-    accountType: 'personal',
+    account: context.account || 'default-tiktok-business-account',
+    sections: ['posts', 'account-insights', 'catalog'],
+    accountType: 'business',
     documentationReady: true,
   };
 }
 
 function createPost(context = {}) {
   return {
-    account: context.account || 'default-tiktok-personal-account',
+    account: context.account || 'default-tiktok-business-account',
     caption: context.caption || null,
     created: Boolean(context.caption),
     documentationReady: true,
   };
 }
 
-function getVideoInsights(context = {}) {
+function getAccountInsights(context = {}) {
   return {
-    account: context.account || 'default-tiktok-personal-account',
-    metrics: ['views', 'likes', 'shares', 'comments'],
+    account: context.account || 'default-tiktok-business-account',
+    metrics: ['video-views', 'profile-views', 'follower-growth', 'engagement-rate'],
     summaryAvailable: false,
     documentationReady: true,
   };
 }
 
-export function createTikTokPlugin(deps) {
+export function createTikTokBusinessPlugin(deps) {
   return createScopedIntegrationPlugin({
-    id: 'tiktok',
-    requiredPermissions: [PERMISSIONS.POST_TIKTOK],
+    id: 'tiktok-business',
+    requiredPermissions: [PERMISSIONS.POST_TIKTOK_BUSINESS],
     ...deps,
     async actionHandler(action, context = {}) {
       switch (action) {
         case 'describe-capabilities':
           return {
-            platform: 'tiktok',
-            accountType: 'personal',
-            supportedActions: TIKTOK_PERSONAL_SUPPORTED_ACTIONS,
+            platform: 'tiktok-business',
+            accountType: 'business',
+            supportedActions: TIKTOK_BUSINESS_SUPPORTED_ACTIONS,
             documentationReady: true,
             status: 'ready',
           };
         case 'get-account-overview':
           return {
-            platform: 'tiktok',
+            platform: 'tiktok-business',
             action,
             status: 'ready',
             overview: getAccountOverview(context),
           };
         case 'create-post':
           return {
-            platform: 'tiktok',
+            platform: 'tiktok-business',
             action,
             status: 'ready',
             result: createPost(context),
           };
-        case 'get-video-insights':
+        case 'get-account-insights':
           return {
-            platform: 'tiktok',
+            platform: 'tiktok-business',
             action,
             status: 'ready',
-            result: getVideoInsights(context),
+            result: getAccountInsights(context),
           };
         default:
-          return { platform: 'tiktok', action, context, status: 'queued' };
+          return { platform: 'tiktok-business', action, context, status: 'queued' };
       }
     },
   });
