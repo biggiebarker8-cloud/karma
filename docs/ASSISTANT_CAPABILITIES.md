@@ -41,16 +41,26 @@ reviewed by Dan are included in the shared business knowledge supplied to prompt
 Tool calls should go through `assistantProfiles.executeTool`; the plugin registry
 rechecks its permission gates for every execution. Actions matching the runtime's
 sensitive-action policy require an exact, single-use approval requested for one
-profile and action. The runtime defaults to denying Dan-only changes and approvals
-unless its `authorizeDanAction` callback confirms the trusted server-side user
-session. Assistants must not be given access to that callback or `approveAction`.
-API keys remain server-side.
+profile and action. The runtime defaults to denying Dan-only changes and approvals.
+When constructing the runtime, configure `authorizeDanAction` to check a verified
+server identity (for example, `(_operation, identity) => identity?.id === danUserId`).
+Never accept the identity from a request body or expose the runtime or authorization
+callback directly to browser code.
 
-This is a runtime foundation, not a complete chat product: profile history is
-currently retained only by the in-memory store and expires with its configured
-retention, and no chat/settings/approval UI or authenticated Dan identity
-integration is included. A host application must supply durable storage and
-authenticate Dan before allowing edits, knowledge reviews, or approvals.
+`TwoAssistantChat.jsx` provides Karma, Collaborator, and Together chat, profile
+history, and shared-fact and action-approval review. Its same-origin API is
+implemented by `createAssistantHttpHandler` in
+`packages/studio/src/assistant/server/assistantHttpHandler.js`. Mount that handler
+at the `/api/assistant/` paths and provide `getAuthenticatedIdentity` using the
+host's verified session middleware plus Dan's stable user ID. The handler ignores
+client-supplied identity fields and checks Dan's identity for fact review and action
+approval. The host's identity resolver must also enforce its normal session and
+CSRF protections on state-changing requests.
+
+This remains a runtime foundation rather than a complete hosted product: profile
+history and approvals are retained only in process memory, and the host must mount
+the handler, supply authenticated identity/session and CSRF protections, and provide
+durable storage if history must survive restarts. API keys remain server-side.
 This does not import ChatGPT's private memory or transfer an existing assistant.
 
 ## Entry point

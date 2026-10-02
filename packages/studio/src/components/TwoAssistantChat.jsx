@@ -20,6 +20,7 @@ export default function TwoAssistantChat() {
   const [history, setHistory] = useState([]);
   const [facts, setFacts] = useState({ approved: [], pending: [] });
   const [approvals, setApprovals] = useState([]);
+  const [canReview, setCanReview] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,12 +36,14 @@ export default function TwoAssistantChat() {
   }
 
   async function loadReviewData() {
-    const [factResult, approvalResult] = await Promise.all([
+    const [factResult, approvalResult, session] = await Promise.all([
       request('/api/assistant/shared-facts'),
       request('/api/assistant/approvals'),
+      request('/api/assistant/session'),
     ]);
     setFacts(factResult);
     setApprovals(approvalResult.approvals);
+    setCanReview(session.canReview);
   }
 
   useEffect(() => {
@@ -162,19 +165,21 @@ export default function TwoAssistantChat() {
         <ul>
           {facts.approved.map((fact, index) => <li key={`${fact}-${index}`}>{fact}</li>)}
         </ul>
-        <form onSubmit={proposeFact}>
-          <label>
-            Propose a fact for shared memory
-            <input
-              value={factDraft}
-              onChange={(event) => setFactDraft(event.target.value)}
-              style={{ display: 'block', width: '100%', marginTop: 4 }}
-            />
-          </label>
-          <button type="submit" disabled={busy || !factDraft.trim()}>Submit for review</button>
-        </form>
+        {canReview && (
+          <form onSubmit={proposeFact}>
+            <label>
+              Propose a fact for shared memory
+              <input
+                value={factDraft}
+                onChange={(event) => setFactDraft(event.target.value)}
+                style={{ display: 'block', width: '100%', marginTop: 4 }}
+              />
+            </label>
+            <button type="submit" disabled={busy || !factDraft.trim()}>Submit for review</button>
+          </form>
+        )}
         <h3>Awaiting review</h3>
-        {facts.pending.map((fact) => (
+        {canReview && facts.pending.map((fact) => (
           <article key={fact.id}>
             <p>{fact.fact}</p>
             <button type="button" disabled={busy} onClick={() => reviewFact(fact.id, true)}>
@@ -195,6 +200,7 @@ export default function TwoAssistantChat() {
             <p>
               {approval.profile}: {approval.pluginId} / {approval.action}
             </p>
+            <pre>{JSON.stringify(approval.context, null, 2)}</pre>
             <button type="button" disabled={busy} onClick={() => approveAction(approval.id)}>
               Approve once
             </button>

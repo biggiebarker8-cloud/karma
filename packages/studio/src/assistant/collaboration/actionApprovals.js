@@ -1,10 +1,14 @@
 const PROTECTED_ACTION = /\b(spend(?:ing)?|pay(?:ment)?|purchase|buy|checkout|charge|transfer|publish|post|delete|remove|erase|destroy|account|connect|disconnect|grant|revoke)\b/i;
 
 function actionKey(profile, pluginId, action, context) {
-  const actionContext = Object.fromEntries(
+  const actionContext = approvalContext(context);
+  return JSON.stringify({ profile, pluginId, action, context: actionContext });
+}
+
+function approvalContext(context) {
+  return Object.fromEntries(
     Object.entries(context).filter(([key]) => key !== 'approvalId' && key !== 'assistantProfile'),
   );
-  return JSON.stringify({ profile, pluginId, action, context: actionContext });
 }
 
 export function createActionApprovals({ auditLogger, authorizeDanAction = () => false } = {}) {
@@ -24,6 +28,7 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
         profile: request.profile,
         pluginId: request.pluginId,
         action: request.action,
+        context: request.context,
       }));
     },
 
@@ -35,6 +40,7 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
         profile,
         pluginId,
         action,
+        context: approvalContext(context),
       });
       auditLogger?.log?.({ type: 'action.approval_requested', profile, pluginId, action });
       return { id, profile, pluginId, action, status: 'pending' };

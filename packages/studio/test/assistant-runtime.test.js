@@ -462,6 +462,18 @@ test('assistant HTTP API uses authenticated server identity for fact reviews and
   };
 
   assert.equal((await call('/api/assistant/profiles')).status, 401);
+  const chat = await call('/api/assistant/chat', {
+    userId: 'dan-123',
+    body: { mode: 'together', prompt: 'Two perspectives' },
+  });
+  assert.equal((await chat.json()).replies.length, 2);
+  const karmaHistory = await call('/api/assistant/history?profile=karma', { userId: 'dan-123' });
+  const collaboratorHistory = await call('/api/assistant/history?profile=collaborator', {
+    userId: 'dan-123',
+  });
+  assert.match(JSON.stringify(await karmaHistory.json()), /Two perspectives/);
+  assert.match(JSON.stringify(await collaboratorHistory.json()), /Two perspectives/);
+
   const spoofed = await call('/api/assistant/shared-facts', {
     userId: 'not-dan',
     body: { fact: 'Private claim', identity: { id: 'dan-123' } },
@@ -483,12 +495,23 @@ test('assistant HTTP API uses authenticated server identity for fact reviews and
     userId: 'dan-123',
     body: { id: fact.id, approved: true },
   })).status, 400);
+  const facts = await call('/api/assistant/shared-facts', { userId: 'dan-123' });
+  assert.deepEqual((await facts.json()).approved, ['Approved territory']);
 
   const requested = await call('/api/assistant/approvals', {
     userId: 'dan-123',
-    body: { profile: 'karma', pluginId: 'commerce', action: 'spend', context: { amount: 10 } },
+    body: {
+      profile: 'karma',
+      pluginId: 'commerce',
+      action: 'spend',
+      context: { amount: 10, reason: 'review this', approvalId: 'ignored', assistantProfile: 'spoof' },
+    },
   });
   const { approval } = await requested.json();
+  assert.deepEqual((await (await call('/api/assistant/approvals', { userId: 'dan-123' })).json())
+    .approvals[0].context, { amount: 10, reason: 'review this' });
+  assert.equal((await (await call('/api/assistant/approvals', { userId: 'not-dan' })).json())
+    .approvals.length, 0);
   assert.equal((await call('/api/assistant/approvals/approve', {
     userId: 'not-dan',
     body: { id: approval.id },
@@ -504,10 +527,12 @@ test('assistant HTTP API uses authenticated server identity for fact reviews and
       profile: 'karma',
       pluginId: 'commerce',
       action: 'spend',
-      context: { amount: 10, approvalId: approval.id },
+      context: { amount: 10, reason: 'review this', approvalId: approval.id },
     },
   });
   assert.equal((await execute()).status, 200);
   assert.equal((await execute()).status, 403);
   assert.equal(executions, 1);
+  assert.equal((await (await call('/api/assistant/approvals', { userId: 'dan-123' })).json())
+    .approvals.length, 0);
 });

@@ -66,6 +66,9 @@ export function createAssistantHttpHandler({
       if (method === 'GET' && path === '/api/assistant/profiles') {
         return jsonResponse({ profiles: assistantProfiles.list() });
       }
+      if (method === 'GET' && path === '/api/assistant/session') {
+        return jsonResponse({ canReview: identity.id === danUserId });
+      }
       if (method === 'GET' && path === '/api/assistant/history') {
         const profile = url.searchParams.get('profile');
         return jsonResponse({ history: assistantProfiles.history(profile) });
@@ -77,7 +80,9 @@ export function createAssistantHttpHandler({
         });
       }
       if (method === 'GET' && path === '/api/assistant/approvals') {
-        return jsonResponse({ approvals: assistantProfiles.pendingActionApprovals() });
+        return jsonResponse({
+          approvals: identity.id === danUserId ? assistantProfiles.pendingActionApprovals() : [],
+        });
       }
       if (method !== 'POST') throw httpError('Not found', 404);
 
