@@ -8,6 +8,7 @@ import { createModelGateway } from '../src/assistant/model/modelGateway.js';
 import { createOpenAITransport } from '../src/assistant/model/openaiTransport.js';
 import { createClaudeTransport } from '../src/assistant/model/claudeTransport.js';
 import { createGitHubTransport } from '../src/assistant/github/githubTransport.js';
+import { createAssistantHttpHandler } from '../src/assistant/server/assistantHttpHandler.js';
 
 function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS], options = {}) {
   return canonicalRuntime({
@@ -427,4 +428,86 @@ test('publishing, deletion, and account changes each require their own approval'
     );
   }
   assert.equal(executions, 0);
+});
+
+test('assistant HTTP API uses authenticated server identity for fact reviews and action approvals', async () => {
+  let executions = 0;
+  const runtime = createRuntime(['commerce:spend'], {
+    authorizeDanAction: (_operation, identity) => identity?.id === 'dan-123',
+    featureFlagOverrides: { commerceEnabled: true },
+  });
+  runtime.pluginRegistry.register({
+    id: 'commerce',
+    requiredFlag: 'commerceEnabled',
+    requiredPermissions: ['commerce:spend'],
+    async execute() {
+      executions += 1;
+      return 'completed';
+    },
+  });
+
+  const handler = createAssistantHttpHandler({
+    assistantProfiles: runtime.assistantProfiles,
+    getAuthenticatedIdentity: (request) => request.auth?.user,
+    danUserId: 'dan-123',
+  });
+  const call = async (path, { userId, body, method } = {}) => {
+    const request = new Request(`https://karma.test${path}`, {
+      method: method ?? (body === undefined ? 'GET' : 'POST'),
+      headers: body === undefined ? {} : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    if (userId) Object.defineProperty(request, 'auth', { value: { user: { id: userId } } });
+    return handler(request);
+  };
+
+  assert.equal((await call('/api/assistant/profiles')).status, 401);
+  const spoofed = await call('/api/assistant/shared-facts', {
+    userId: 'not-dan',
+    body: { fact: 'Private claim', identity: { id: 'dan-123' } },
+  });
+  assert.equal(spoofed.status, 403);
+
+  const proposed = await call('/api/assistant/shared-facts', {
+    userId: 'dan-123',
+    body: { fact: 'Approved territory' },
+  });
+  const { fact } = await proposed.json();
+  assert.equal(fact.fact, 'Approved territory');
+  assert.equal((await call('/api/assistant/shared-facts')).status, 401);
+  assert.equal((await call('/api/assistant/shared-facts/review', {
+    userId: 'dan-123',
+    body: { id: fact.id, approved: true },
+  })).status, 200);
+  assert.equal((await call('/api/assistant/shared-facts/review', {
+    userId: 'dan-123',
+    body: { id: fact.id, approved: true },
+  })).status, 400);
+
+  const requested = await call('/api/assistant/approvals', {
+    userId: 'dan-123',
+    body: { profile: 'karma', pluginId: 'commerce', action: 'spend', context: { amount: 10 } },
+  });
+  const { approval } = await requested.json();
+  assert.equal((await call('/api/assistant/approvals/approve', {
+    userId: 'not-dan',
+    body: { id: approval.id },
+  })).status, 403);
+  assert.equal((await call('/api/assistant/approvals/approve', {
+    userId: 'dan-123',
+    body: { id: approval.id, identity: { id: 'not-dan' } },
+  })).status, 200);
+
+  const execute = () => call('/api/assistant/tools', {
+    userId: 'dan-123',
+    body: {
+      profile: 'karma',
+      pluginId: 'commerce',
+      action: 'spend',
+      context: { amount: 10, approvalId: approval.id },
+    },
+  });
+  assert.equal((await execute()).status, 200);
+  assert.equal((await execute()).status, 403);
+  assert.equal(executions, 1);
 });

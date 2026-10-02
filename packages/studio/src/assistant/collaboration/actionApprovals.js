@@ -18,6 +18,15 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
   }
 
   return {
+    listPending() {
+      return Array.from(pending, ([id, request]) => ({
+        id,
+        profile: request.profile,
+        pluginId: request.pluginId,
+        action: request.action,
+      }));
+    },
+
     request({ profile, pluginId, action, context = {} }) {
       const id = globalThis.crypto?.randomUUID?.();
       if (!id) throw new Error('Secure randomness is required to request action approval');
@@ -31,8 +40,8 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
       return { id, profile, pluginId, action, status: 'pending' };
     },
 
-    approve(id) {
-      if (!authorizeDanAction('approve-sensitive-action')) {
+    approve(id, identity) {
+      if (!authorizeDanAction('approve-sensitive-action', identity)) {
         throw new Error('Only Dan can approve an action');
       }
       const request = pending.get(id);

@@ -43,8 +43,10 @@ export function createAssistantProfiles({
   const assertProfile = (profile) => {
     if (!profiles[profile]) throw new Error(`Unknown assistant profile: ${profile}`);
   };
-  const requireDan = (operation) => {
-    if (!authorizeDanAction(operation)) throw new Error('This action requires Dan’s authenticated session');
+  const requireDan = (operation, identity) => {
+    if (!authorizeDanAction(operation, identity)) {
+      throw new Error('This action requires Dan’s authenticated session');
+    }
   };
 
   function sharedKnowledge() {
@@ -104,9 +106,9 @@ export function createAssistantProfiles({
       return profiles[profile].instructions;
     },
 
-    updateInstructions(profile, instructions) {
+    updateInstructions(profile, instructions, identity) {
       assertProfile(profile);
-      requireDan('edit-personality');
+      requireDan('edit-personality', identity);
       if (typeof instructions !== 'string' || !instructions.trim()) {
         throw new Error('Personality instructions must be a non-empty string');
       }
@@ -120,54 +122,71 @@ export function createAssistantProfiles({
       return historyRecords(memoryStore, profile);
     },
 
-    saveFeedback(profile, feedback) {
+    saveFeedback(profile, feedback, identity) {
       assertProfile(profile);
-      requireDan('save-profile-feedback');
+      requireDan('save-profile-feedback', identity);
       const entry = { kind: 'profile-feedback', profile, feedback };
       memoryStore.write('task', entry);
       return entry;
     },
 
-    saveExample(profile, example) {
+    saveExample(profile, example, identity) {
       assertProfile(profile);
-      requireDan('save-profile-example');
+      requireDan('save-profile-example', identity);
       const entry = { kind: 'profile-example', profile, example };
       memoryStore.write('task', entry);
       return entry;
     },
 
-    proposeBusinessFact(fact) {
-      requireDan('propose-business-fact');
+    proposeBusinessFact(fact, identity) {
+      requireDan('propose-business-fact', identity);
       if (typeof fact !== 'string' || !fact.trim()) throw new Error('Business fact must be non-empty');
+      const id = globalThis.crypto?.randomUUID?.();
+      if (!id) throw new Error('Secure randomness is required to propose a business fact');
       const entry = memoryStore.write('task', {
         kind: 'proposed-business-fact',
+        id,
         fact: fact.trim(),
         status: 'pending-review',
       });
       return entry.value;
     },
 
-    reviewBusinessFact(fact, isApproved) {
-      requireDan('review-business-fact');
+    pendingBusinessFacts() {
+      const taskMemory = memoryStore.read('task');
+      const reviewed = new Set(
+        taskMemory
+          .filter((entry) => entry.kind === 'business-fact-review')
+          .map((entry) => entry.id),
+      );
+      return taskMemory.filter((entry) => (
+        entry.kind === 'proposed-business-fact' && !reviewed.has(entry.id)
+      ));
+    },
+
+    reviewBusinessFact(factId, isApproved, identity) {
+      requireDan('review-business-fact', identity);
       if (typeof isApproved !== 'boolean') throw new Error('A review decision is required');
+      const proposalId = typeof factId === 'string' ? factId : factId?.id;
       const taskMemory = memoryStore.read('task');
       const pendingFact = taskMemory.find((entry) => (
         entry.kind === 'proposed-business-fact'
         && entry.status === 'pending-review'
-        && entry.fact === fact?.fact
+        && entry.id === proposalId
       ));
       const alreadyReviewed = taskMemory.some((entry) => (
-        entry.kind === 'business-fact-review' && entry.fact === fact?.fact
+        entry.kind === 'business-fact-review' && entry.id === proposalId
       ));
       if (!pendingFact || alreadyReviewed) {
         throw new Error('Only an unreviewed business fact can be reviewed');
       }
       const entry = isApproved
-        ? memoryStore.write('user', { kind: 'approved-business-fact', fact: fact.fact })
-        : { value: fact };
+        ? memoryStore.write('user', { kind: 'approved-business-fact', fact: pendingFact.fact })
+        : { value: pendingFact };
       memoryStore.write('task', {
         kind: 'business-fact-review',
-        fact: fact.fact,
+        id: proposalId,
+        fact: pendingFact.fact,
         result: isApproved ? 'approved' : 'rejected',
       });
       auditLogger?.log?.({
@@ -199,8 +218,12 @@ export function createAssistantProfiles({
       return actionApprovals.request({ profile, pluginId, action, context });
     },
 
-    approveAction(id) {
-      return actionApprovals.approve(id);
+    pendingActionApprovals() {
+      return actionApprovals.listPending();
+    },
+
+    approveAction(id, identity) {
+      return actionApprovals.approve(id, identity);
     },
 
     executeTool(profile, pluginId, action, context = {}) {
