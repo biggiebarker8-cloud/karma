@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: karma-assistant
+    runtime: node
+    plan: starter
+    rootDir: packages/studio
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    disk:
+      name: karma-assistant-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATABASE_PATH
+        value: /var/data/assistant.sqlite
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: DAN_USER_ID
+        sync: false
+      - key: DAN_PASSWORD
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
