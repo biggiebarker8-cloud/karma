@@ -2,8 +2,12 @@
   "name": "@karma/studio",
   "private": true,
   "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
   "scripts": {
     "test": "node --test",
-    "try:assistant": "node --loader ./scripts/js-extension-loader.mjs ./scripts/try-assistant.mjs"
+    "try:assistant": "node --loader ./scripts/js-extension-loader.mjs ./scripts/try-assistant.mjs",
+    "start": "node ./scripts/serve-assistant.mjs"
   }
 }

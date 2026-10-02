@@ -8,15 +8,19 @@ import { createModelGateway } from '../src/assistant/model/modelGateway.js';
 import { createOpenAITransport } from '../src/assistant/model/openaiTransport.js';
 import { createClaudeTransport } from '../src/assistant/model/claudeTransport.js';
 import { createGitHubTransport } from '../src/assistant/github/githubTransport.js';
+import { createAssistantHttpHandler } from '../src/assistant/server/assistantHttpHandler.js';
 
-function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS]) {
+function createRuntime(permissions = [PERMISSIONS.DESIGN_COMICS], options = {}) {
   return canonicalRuntime({
     modelTransport: async () => 'ok',
+    claudeTransport: async () => 'karma ok',
     permissions,
+    authorizeDanAction: () => true,
     featureFlagOverrides: {
       pluginsEnabled: true,
       creativePluginsEnabled: true,
     },
+    ...options,
   });
 }
 
@@ -224,4 +228,311 @@ test('comics plugin remains unavailable without the required permission', async 
     () => runtime.pluginRegistry.execute('comics', 'create-comic-brief', { variant: 'carousel' }),
     (error) => error.code === 'PLUGIN_UNAVAILABLE',
   );
+});
+
+test('assistant profiles retain separate histories and personality instructions', async () => {
+  const prompts = [];
+  const runtime = createRuntime([], {
+    modelTransport: async ({ prompt, model }) => {
+      prompts.push({ prompt, model });
+      return `${model} reply`;
+    },
+    claudeTransport: async ({ prompt, model }) => {
+      prompts.push({ prompt, model });
+      return `${model} reply`;
+    },
+  });
+  const profiles = runtime.assistantProfiles;
+
+  profiles.updateInstructions('karma', 'Be concise and candid.');
+  profiles.saveFeedback('karma', 'Lead with the answer.');
+  profiles.saveExample(
+    'collaborator',
+    { prompt: 'Structure a plan', response: 'Start with the goal.' },
+  );
+  await profiles.chat('karma', 'Karma-only question');
+  await profiles.chat('collaborator', 'Collaborator-only question');
+
+  assert.equal(profiles.history('karma').length, 2);
+  assert.equal(profiles.history('collaborator').length, 2);
+  assert.equal(profiles.history('karma').some((entry) => entry.content.includes('Collaborator-only')), false);
+  assert.match(prompts[0].prompt, /Be concise and candid/);
+  assert.match(prompts[0].prompt, /Lead with the answer/);
+  assert.doesNotMatch(prompts[0].prompt, /Structure a plan/);
+  assert.match(prompts[1].prompt, /Structure a plan/);
+  assert.equal(prompts[0].model, 'claude-sonnet-5');
+  assert.equal(prompts[1].model, 'gpt-5');
+});
+
+test('approved business knowledge is shared with both profiles; proposals require review', async () => {
+  const prompts = [];
+  const runtime = createRuntime([], {
+    sharedBusinessKnowledge: ['Approved from configuration'],
+    modelTransport: async ({ prompt }) => {
+      prompts.push(prompt);
+      return 'response';
+    },
+    claudeTransport: async ({ prompt }) => {
+      prompts.push(prompt);
+      return 'response';
+    },
+  });
+  const profiles = runtime.assistantProfiles;
+  const proposal = profiles.proposeBusinessFact('Proposed fact');
+
+  assert.deepEqual(profiles.sharedKnowledge(), ['Approved from configuration']);
+  profiles.reviewBusinessFact(proposal, true);
+  await profiles.chat('karma', 'Question');
+  await profiles.chat('collaborator', 'Question');
+  assert.deepEqual(profiles.sharedKnowledge(), ['Approved from configuration', 'Proposed fact']);
+  assert.match(prompts[0], /Proposed fact/);
+  assert.match(prompts[1], /Proposed fact/);
+  assert.throws(
+    () => profiles.reviewBusinessFact({ fact: 'Unsubmitted' }, true),
+    /unreviewed business fact/,
+  );
+});
+
+test('Together mode produces two labeled replies and at most one optional review', async () => {
+  let calls = 0;
+  const runtime = createRuntime([], {
+    modelTransport: async ({ model }) => `${model} response ${++calls}`,
+    claudeTransport: async ({ model }) => `${model} response ${++calls}`,
+  });
+
+  const replies = await runtime.assistantProfiles.chat('together', 'Compare these ideas');
+  assert.equal(replies.length, 2);
+  assert.deepEqual(replies.map(({ assistant }) => assistant), ['Karma', 'Collaborator']);
+  const reviewed = await runtime.assistantProfiles.chat('together', 'Review once', { includeReview: true });
+  assert.equal(reviewed.length, 3);
+  assert.deepEqual(reviewed.map(({ assistant }) => assistant), [
+    'Karma',
+    'Collaborator',
+    'Karma (review)',
+  ]);
+  assert.equal(calls, 5);
+});
+
+test('profile memories are isolated and saved shared facts only appear after Dan reviews them', () => {
+  const runtime = createRuntime([]);
+  const profiles = runtime.assistantProfiles;
+
+  profiles.saveFeedback('karma', 'Keep answers short');
+  profiles.saveExample('collaborator', { prompt: 'Plan', response: 'Steps' });
+
+  const proposal = profiles.proposeBusinessFact('New sales territory');
+  profiles.reviewBusinessFact(proposal, false);
+  assert.deepEqual(profiles.sharedKnowledge(), []);
+  assert.throws(
+    () => profiles.reviewBusinessFact(proposal, true),
+    /unreviewed business fact/,
+  );
+});
+
+test('sensitive tool calls need exact, one-use Dan approval and cannot cross profiles', async () => {
+  let executions = 0;
+  const runtime = createRuntime(['commerce:spend'], {
+    featureFlagOverrides: { commerceEnabled: true },
+  });
+  runtime.pluginRegistry.register({
+    id: 'commerce',
+    requiredFlag: 'commerceEnabled',
+    requiredPermissions: ['commerce:spend'],
+    async execute() {
+      executions += 1;
+      return 'completed';
+    },
+  });
+  const profiles = runtime.assistantProfiles;
+  const request = profiles.requestActionApproval('karma', 'commerce', 'spend', { amount: 10 });
+
+  await assert.rejects(
+    () => profiles.executeTool('karma', 'commerce', 'spend', { amount: 10 }),
+    (error) => error.code === 'ACTION_APPROVAL_REQUIRED',
+  );
+  const untrustedRuntime = createRuntime([], { authorizeDanAction: () => false });
+  const untrustedApproval = untrustedRuntime.assistantProfiles.requestActionApproval(
+    'karma',
+    'commerce',
+    'spend',
+    { amount: 10 },
+  );
+  assert.throws(
+    () => untrustedRuntime.assistantProfiles.approveAction(untrustedApproval.id),
+    /Only Dan can approve/,
+  );
+  profiles.approveAction(request.id);
+  await assert.rejects(
+    () => profiles.executeTool('collaborator', 'commerce', 'spend', {
+      amount: 10,
+      approvalId: request.id,
+    }),
+    (error) => error.code === 'ACTION_APPROVAL_REQUIRED',
+  );
+  assert.equal(
+    await profiles.executeTool('karma', 'commerce', 'spend', { amount: 10, approvalId: request.id }),
+    'completed',
+  );
+  await assert.rejects(
+    () => profiles.executeTool('karma', 'commerce', 'spend', { amount: 10, approvalId: request.id }),
+    (error) => error.code === 'ACTION_APPROVAL_REQUIRED',
+  );
+  assert.equal(executions, 1);
+});
+
+test('tool permissions are enforced even when the Collaborator requests the action', async () => {
+  let executions = 0;
+  const runtime = createRuntime([], {
+    featureFlagOverrides: { commerceEnabled: true },
+  });
+  runtime.pluginRegistry.register({
+    id: 'commerce',
+    requiredFlag: 'commerceEnabled',
+    requiredPermissions: ['commerce:spend'],
+    async execute() {
+      executions += 1;
+    },
+  });
+
+  await assert.rejects(
+    () => runtime.assistantProfiles.executeTool('collaborator', 'commerce', 'spend', {}),
+    (error) => error.code === 'PLUGIN_UNAVAILABLE',
+  );
+  assert.equal(executions, 0);
+  assert.equal(runtime.auditLogger.list().some((event) => event.type === 'plugin.blocked'), true);
+});
+
+test('profile edits and shared-fact review fail closed without Dan authentication', () => {
+  const runtime = createRuntime([], { authorizeDanAction: () => false });
+  const profiles = runtime.assistantProfiles;
+
+  assert.throws(() => profiles.updateInstructions('karma', 'New instructions'), /Dan’s authenticated session/);
+  assert.throws(() => profiles.saveFeedback('karma', 'Be concise'), /Dan’s authenticated session/);
+  assert.throws(() => profiles.proposeBusinessFact('New fact'), /Dan’s authenticated session/);
+});
+
+test('publishing, deletion, and account changes each require their own approval', async () => {
+  let executions = 0;
+  const runtime = createRuntime([]);
+  runtime.pluginRegistry.register({
+    id: 'business-tools',
+    async execute() {
+      executions += 1;
+    },
+  });
+
+  for (const action of ['publish-post', 'delete-data', 'change-account']) {
+    await assert.rejects(
+      () => runtime.assistantProfiles.executeTool('karma', 'business-tools', action, {}),
+      (error) => error.code === 'ACTION_APPROVAL_REQUIRED',
+    );
+  }
+  assert.equal(executions, 0);
+});
+
+test('assistant HTTP API uses authenticated server identity for fact reviews and action approvals', async () => {
+  let executions = 0;
+  const runtime = createRuntime(['commerce:spend'], {
+    authorizeDanAction: (_operation, identity) => identity?.id === 'dan-123',
+    featureFlagOverrides: { commerceEnabled: true },
+  });
+  runtime.pluginRegistry.register({
+    id: 'commerce',
+    requiredFlag: 'commerceEnabled',
+    requiredPermissions: ['commerce:spend'],
+    async execute() {
+      executions += 1;
+      return 'completed';
+    },
+  });
+
+  const handler = createAssistantHttpHandler({
+    assistantProfiles: runtime.assistantProfiles,
+    getAuthenticatedIdentity: (request) => request.auth?.user,
+    danUserId: 'dan-123',
+  });
+  const call = async (path, { userId, body, method } = {}) => {
+    const request = new Request(`https://karma.test${path}`, {
+      method: method ?? (body === undefined ? 'GET' : 'POST'),
+      headers: body === undefined ? {} : { 'content-type': 'application/json' },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    if (userId) Object.defineProperty(request, 'auth', { value: { user: { id: userId } } });
+    return handler(request);
+  };
+
+  assert.equal((await call('/api/assistant/profiles')).status, 401);
+  const chat = await call('/api/assistant/chat', {
+    userId: 'dan-123',
+    body: { mode: 'together', prompt: 'Two perspectives' },
+  });
+  assert.equal((await chat.json()).replies.length, 2);
+  const karmaHistory = await call('/api/assistant/history?profile=karma', { userId: 'dan-123' });
+  const collaboratorHistory = await call('/api/assistant/history?profile=collaborator', {
+    userId: 'dan-123',
+  });
+  assert.match(JSON.stringify(await karmaHistory.json()), /Two perspectives/);
+  assert.match(JSON.stringify(await collaboratorHistory.json()), /Two perspectives/);
+
+  const spoofed = await call('/api/assistant/shared-facts', {
+    userId: 'not-dan',
+    body: { fact: 'Private claim', identity: { id: 'dan-123' } },
+  });
+  assert.equal(spoofed.status, 403);
+
+  const proposed = await call('/api/assistant/shared-facts', {
+    userId: 'dan-123',
+    body: { fact: 'Approved territory' },
+  });
+  const { fact } = await proposed.json();
+  assert.equal(fact.fact, 'Approved territory');
+  assert.equal((await call('/api/assistant/shared-facts')).status, 401);
+  assert.equal((await call('/api/assistant/shared-facts/review', {
+    userId: 'dan-123',
+    body: { id: fact.id, approved: true },
+  })).status, 200);
+  assert.equal((await call('/api/assistant/shared-facts/review', {
+    userId: 'dan-123',
+    body: { id: fact.id, approved: true },
+  })).status, 400);
+  const facts = await call('/api/assistant/shared-facts', { userId: 'dan-123' });
+  assert.deepEqual((await facts.json()).approved, ['Approved territory']);
+
+  const requested = await call('/api/assistant/approvals', {
+    userId: 'dan-123',
+    body: {
+      profile: 'karma',
+      pluginId: 'commerce',
+      action: 'spend',
+      context: { amount: 10, reason: 'review this', approvalId: 'ignored', assistantProfile: 'spoof' },
+    },
+  });
+  const { approval } = await requested.json();
+  assert.deepEqual((await (await call('/api/assistant/approvals', { userId: 'dan-123' })).json())
+    .approvals[0].context, { amount: 10, reason: 'review this' });
+  assert.equal((await (await call('/api/assistant/approvals', { userId: 'not-dan' })).json())
+    .approvals.length, 0);
+  assert.equal((await call('/api/assistant/approvals/approve', {
+    userId: 'not-dan',
+    body: { id: approval.id },
+  })).status, 403);
+  assert.equal((await call('/api/assistant/approvals/approve', {
+    userId: 'dan-123',
+    body: { id: approval.id, identity: { id: 'not-dan' } },
+  })).status, 200);
+
+  const execute = () => call('/api/assistant/tools', {
+    userId: 'dan-123',
+    body: {
+      profile: 'karma',
+      pluginId: 'commerce',
+      action: 'spend',
+      context: { amount: 10, reason: 'review this', approvalId: approval.id },
+    },
+  });
+  assert.equal((await execute()).status, 200);
+  assert.equal((await execute()).status, 403);
+  assert.equal(executions, 1);
+  assert.equal((await (await call('/api/assistant/approvals', { userId: 'dan-123' })).json())
+    .approvals.length, 0);
 });
