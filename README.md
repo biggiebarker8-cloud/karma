@@ -18,7 +18,8 @@ The runnable Node.js host serves the two-assistant UI, verifies sign-in and CSRF
 tokens, and stores profile histories and approvals in SQLite. It requires Node.js
 22.13+ plus server-side model keys and workspace credentials. See the [assistant
 capabilities guide](docs/ASSISTANT_CAPABILITIES.md#two-assistant-runtime) for
-required environment variables and local startup instructions.
+required environment variables and local startup instructions. For hosting and
+persistent-storage setup, see the [deployment guide](docs/DEPLOYMENT.md).
 
 ## Current scope
 
