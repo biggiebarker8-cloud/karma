@@ -116,6 +116,20 @@ test('host app authenticates, enforces CSRF, and persists history and single-use
     body: { fact: 'Cross-site request' },
   })).response.status, 403);
 
+  const karmaChat = await call('/api/assistant/chat', {
+    method: 'POST',
+    body: { mode: 'karma', prompt: 'Karma-only history' },
+  });
+  assert.equal(karmaChat.response.status, 200);
+  assert.equal(karmaChat.body.replies[0].assistant, 'Karma');
+
+  const collaboratorChat = await call('/api/assistant/chat', {
+    method: 'POST',
+    body: { mode: 'collaborator', prompt: 'Collaborator-only history' },
+  });
+  assert.equal(collaboratorChat.response.status, 200);
+  assert.equal(collaboratorChat.body.replies[0].assistant, 'Collaborator');
+
   const chat = await call('/api/assistant/chat', {
     method: 'POST',
     body: { mode: 'together', prompt: 'Keep this after restart' },
@@ -168,7 +182,16 @@ test('host app authenticates, enforces CSRF, and persists history and single-use
   const restored = await call('/api/assistant/history?profile=karma');
   assert.equal(restored.response.status, 200);
   assert.equal(restored.response.headers.get('cache-control'), 'no-store');
-  assert.match(JSON.stringify(restored.body.history), /Keep this after restart/);
+  const karmaHistory = JSON.stringify(restored.body.history);
+  assert.match(karmaHistory, /Karma-only history/);
+  assert.match(karmaHistory, /Keep this after restart/);
+  assert.doesNotMatch(karmaHistory, /Collaborator-only history/);
+  const collaboratorHistory = await call('/api/assistant/history?profile=collaborator');
+  assert.equal(collaboratorHistory.response.status, 200);
+  const collaboratorHistoryText = JSON.stringify(collaboratorHistory.body.history);
+  assert.match(collaboratorHistoryText, /Collaborator-only history/);
+  assert.match(collaboratorHistoryText, /Keep this after restart/);
+  assert.doesNotMatch(collaboratorHistoryText, /Karma-only history/);
   const shared = await call('/api/assistant/shared-facts');
   assert.deepEqual(shared.body.approved, ['Durable shared fact']);
   const pendingApprovals = await call('/api/assistant/approvals');
