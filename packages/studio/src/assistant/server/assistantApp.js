@@ -178,6 +178,14 @@ export function createAssistantApp({
             sendJson(response, 429, { error: 'Too many sign-in attempts; try again later' });
             return;
           }
+          if (!loginAttempts.has(address) && loginAttempts.size >= 4096) {
+            const evictable = Array.from(loginAttempts).find(([, value]) => value.inFlight === 0);
+            if (evictable) loginAttempts.delete(evictable[0]);
+            else {
+              sendJson(response, 429, { error: 'Too many sign-in attempts; try again later' });
+              return;
+            }
+          }
           attempt.inFlight += 1;
           activeLoginAttempts += 1;
           loginAttempts.set(address, attempt);
@@ -189,9 +197,6 @@ export function createAssistantApp({
             activeLoginAttempts -= 1;
           }
           if (!session) {
-            if (!loginAttempts.has(address) && loginAttempts.size >= 4096) {
-              loginAttempts.delete(loginAttempts.keys().next().value);
-            }
             attempt.failures += 1;
             loginAttempts.set(address, attempt);
             sendJson(response, 401, { error: 'Invalid password' });
