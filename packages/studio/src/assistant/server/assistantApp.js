@@ -12,6 +12,8 @@ const STYLES_PATH = fileURLToPath(new URL('../../../public/app.css', import.meta
 const MAX_BODY_BYTES = 64 * 1024;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_ATTEMPT_LIMIT = 5;
+const MAX_LOGIN_IN_FLIGHT = 4;
+const MAX_LOGIN_IN_FLIGHT_PER_IP = 2;
 const SECURITY_HEADERS = {
   'content-security-policy': "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'",
   'referrer-policy': 'same-origin',
@@ -99,6 +101,7 @@ export function createAssistantApp({
   let auth;
   let assistantHandler;
   const loginAttempts = new Map();
+  let activeLoginAttempts = 0;
   try {
     auth = createSessionAuth({
       sessionStore: storage.sessionStore,
@@ -120,7 +123,10 @@ export function createAssistantApp({
       danUserId,
     });
 
-    const server = createServer(async (request, response) => {
+    const server = createServer({
+      headersTimeout: 10_000,
+      requestTimeout: 30_000,
+    }, async (request, response) => {
       try {
         const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
         const expectedOrigin = configuredOrigin
@@ -145,24 +151,49 @@ export function createAssistantApp({
           const address = request.socket.remoteAddress ?? 'unknown';
           const now = Date.now();
           for (const [ip, value] of loginAttempts) {
-            if (value.startedAt + LOGIN_WINDOW_MS <= now) loginAttempts.delete(ip);
+            if (value.inFlight === 0 && value.startedAt + LOGIN_WINDOW_MS <= now) {
+              loginAttempts.delete(ip);
+            }
           }
-          const attempt = loginAttempts.get(address);
+          let attempt = loginAttempts.get(address);
+          if (attempt && attempt.startedAt + LOGIN_WINDOW_MS <= now && attempt.inFlight === 0) {
+            loginAttempts.delete(address);
+            attempt = undefined;
+          } else if (attempt && attempt.startedAt + LOGIN_WINDOW_MS <= now) {
+            attempt.startedAt = now;
+            attempt.failures = 0;
+          }
           if (attempt?.failures >= LOGIN_ATTEMPT_LIMIT) {
             sendJson(response, 429, { error: 'Too many sign-in attempts; try again later' });
             return;
           }
           const body = await readJsonBody(request);
-          const session = await auth.authenticate(body.password);
+          attempt = loginAttempts.get(address) ?? {
+            startedAt: Date.now(),
+            failures: 0,
+            inFlight: 0,
+          };
+          if (attempt.inFlight >= MAX_LOGIN_IN_FLIGHT_PER_IP
+            || activeLoginAttempts >= MAX_LOGIN_IN_FLIGHT) {
+            sendJson(response, 429, { error: 'Too many sign-in attempts; try again later' });
+            return;
+          }
+          attempt.inFlight += 1;
+          activeLoginAttempts += 1;
+          loginAttempts.set(address, attempt);
+          let session;
+          try {
+            session = await auth.authenticate(body.password);
+          } finally {
+            attempt.inFlight -= 1;
+            activeLoginAttempts -= 1;
+          }
           if (!session) {
-            const current = loginAttempts.get(address);
-            if (!current && loginAttempts.size >= 4096) {
+            if (!loginAttempts.has(address) && loginAttempts.size >= 4096) {
               loginAttempts.delete(loginAttempts.keys().next().value);
             }
-            loginAttempts.set(address, {
-              startedAt: current?.startedAt ?? now,
-              failures: (current?.failures ?? 0) + 1,
-            });
+            attempt.failures += 1;
+            loginAttempts.set(address, attempt);
             sendJson(response, 401, { error: 'Invalid password' });
             return;
           }
