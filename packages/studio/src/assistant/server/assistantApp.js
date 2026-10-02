@@ -153,7 +153,7 @@ export function createAssistantApp({
             return;
           }
           const body = await readJsonBody(request);
-          const session = auth.authenticate(body.password);
+          const session = await auth.authenticate(body.password);
           if (!session) {
             const current = loginAttempts.get(address);
             if (!current && loginAttempts.size >= 4096) {

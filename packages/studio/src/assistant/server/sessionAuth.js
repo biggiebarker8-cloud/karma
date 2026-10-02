@@ -1,12 +1,17 @@
 import {
-  createHash,
   createHmac,
   randomBytes,
+  scrypt,
+  scryptSync,
   timingSafeEqual,
 } from 'node:crypto';
+import { promisify } from 'node:util';
 
 const SESSION_COOKIE = 'karma_session';
 const SESSION_TTL_MS = 12 * 60 * 60 * 1000;
+const PASSWORD_HASH_BYTES = 64;
+const SCRYPT_OPTIONS = { N: 1 << 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 };
+const derivePasswordHash = promisify(scrypt);
 
 function safeEqual(left, right) {
   const leftBytes = Buffer.from(left);
@@ -43,7 +48,13 @@ export function createSessionAuth({
     throw new Error('DAN_USER_ID and DAN_PASSWORD (at least 12 bytes) are required');
   }
   const secretBytes = Buffer.from(secret);
-  const passwordHash = createHash('sha256').update(danPassword).digest();
+  const passwordSalt = randomBytes(16);
+  const passwordHash = scryptSync(
+    danPassword,
+    passwordSalt,
+    PASSWORD_HASH_BYTES,
+    SCRYPT_OPTIONS,
+  );
 
   function signature(id) {
     return createHmac('sha256', secretBytes).update(id).digest('base64url');
@@ -72,9 +83,14 @@ export function createSessionAuth({
   }
 
   return {
-    authenticate(password) {
+    async authenticate(password) {
       if (typeof password !== 'string') return null;
-      const candidateHash = createHash('sha256').update(password).digest();
+      const candidateHash = await derivePasswordHash(
+        password,
+        passwordSalt,
+        PASSWORD_HASH_BYTES,
+        SCRYPT_OPTIONS,
+      );
       if (!timingSafeEqual(candidateHash, passwordHash)) return null;
       const id = randomBytes(32).toString('base64url');
       const csrfToken = randomBytes(32).toString('base64url');
