@@ -12,6 +12,14 @@ npm run try:assistant
 
 `npm test` runs the dependency-free Node.js regression suite. `npm run try:assistant` exercises the canonical assistant runtime and verifies that the OpenClaw plugin is available through the permission- and feature-flag-aware plugin registry.
 
+## Run the two-assistant chat app
+
+The runnable Node.js host serves the two-assistant UI, verifies sign-in and CSRF
+tokens, and stores profile histories and approvals in SQLite. It requires Node.js
+22.13+ plus server-side model keys and workspace credentials. See the [assistant
+capabilities guide](docs/ASSISTANT_CAPABILITIES.md#two-assistant-runtime) for
+required environment variables and local startup instructions.
+
 ## Current scope
 
 Karma provides a JavaScript ESM assistant runtime foundation with feature flags, permissions, audit logging, rate limits, voice and vision adapters, memory and learning stores, internet reference retrieval, installation guidance, and plugin foundations for creative and platform integrations.

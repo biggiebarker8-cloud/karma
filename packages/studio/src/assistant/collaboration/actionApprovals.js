@@ -11,9 +11,31 @@ function approvalContext(context) {
   );
 }
 
-export function createActionApprovals({ auditLogger, authorizeDanAction = () => false } = {}) {
+export function createActionApprovals({
+  auditLogger,
+  authorizeDanAction = () => false,
+  approvalStore,
+} = {}) {
   const pending = new Map();
   const approved = new Map();
+  const store = {
+    listPending: () => Array.from(pending, ([id, request]) => ({ id, ...request })),
+    putPending: (id, request) => pending.set(id, request),
+    moveToApproved(id) {
+      const request = pending.get(id);
+      if (!request) return null;
+      pending.delete(id);
+      approved.set(id, request);
+      return request;
+    },
+    consumeApproved(id, key) {
+      const request = approved.get(id);
+      if (!request || request.key !== key) return false;
+      approved.delete(id);
+      return true;
+    },
+  };
+  const storage = approvalStore ?? store;
 
   function requiresApproval(pluginId, action, context) {
     return PROTECTED_ACTION.test(
@@ -23,7 +45,7 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
 
   return {
     listPending() {
-      return Array.from(pending, ([id, request]) => ({
+      return storage.listPending().map(({ id, ...request }) => ({
         id,
         profile: request.profile,
         pluginId: request.pluginId,
@@ -35,13 +57,14 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
     request({ profile, pluginId, action, context = {} }) {
       const id = globalThis.crypto?.randomUUID?.();
       if (!id) throw new Error('Secure randomness is required to request action approval');
-      pending.set(id, {
+      const request = {
         key: actionKey(profile, pluginId, action, context),
         profile,
         pluginId,
         action,
         context: approvalContext(context),
-      });
+      };
+      storage.putPending(id, request);
       auditLogger?.log?.({ type: 'action.approval_requested', profile, pluginId, action });
       return { id, profile, pluginId, action, status: 'pending' };
     },
@@ -50,10 +73,8 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
       if (!authorizeDanAction('approve-sensitive-action', identity)) {
         throw new Error('Only Dan can approve an action');
       }
-      const request = pending.get(id);
+      const request = storage.moveToApproved(id);
       if (!request) throw new Error('Action approval is not pending');
-      pending.delete(id);
-      approved.set(id, request);
       auditLogger?.log?.({
         type: 'action.approved',
         reviewer: 'Dan',
@@ -68,17 +89,15 @@ export function createActionApprovals({ auditLogger, authorizeDanAction = () => 
       if (!requiresApproval(pluginId, action, context)) return;
 
       const requestId = context.approvalId;
-      const approval = approved.get(requestId);
       const cleanContext = { ...context };
       delete cleanContext.approvalId;
       const key = actionKey(profile, pluginId, action, cleanContext);
-      if (!approval || approval.key !== key) {
+      if (!storage.consumeApproved(requestId, key)) {
         auditLogger?.log?.({ type: 'action.denied', profile, pluginId, action, reason: 'approval_required' });
         const error = new Error('This action requires Dan’s explicit approval for this exact action');
         error.code = 'ACTION_APPROVAL_REQUIRED';
         throw error;
       }
-      approved.delete(requestId);
     },
   };
 }

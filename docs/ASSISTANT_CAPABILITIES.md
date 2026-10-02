@@ -47,20 +47,49 @@ server identity (for example, `(_operation, identity) => identity?.id === danUse
 Never accept the identity from a request body or expose the runtime or authorization
 callback directly to browser code.
 
-`TwoAssistantChat.jsx` provides Karma, Collaborator, and Together chat, profile
-history, and shared-fact and action-approval review. Its same-origin API is
-implemented by `createAssistantHttpHandler` in
-`packages/studio/src/assistant/server/assistantHttpHandler.js`. Mount that handler
-at the `/api/assistant/` paths and provide `getAuthenticatedIdentity` using the
-host's verified session middleware plus Dan's stable user ID. The handler ignores
-client-supplied identity fields and checks Dan's identity for fact review and action
-approval. The host's identity resolver must also enforce its normal session and
-CSRF protections on state-changing requests.
+`npm start` in `packages/studio` runs the local Node.js app. The browser UI in
+`packages/studio/public` provides Karma, Collaborator, and Together chat, profile
+history, and shared-fact and action-approval review. It mounts
+`createAssistantHttpHandler` behind
+`createAssistantApp`'s login/session and CSRF middleware. The SQLite store persists
+profile histories, proposed and approved shared facts, sessions, and pending or
+approved action tokens across app restarts. Approval consumption is transactional
+and single-use. The data file is created with owner-only permissions.
 
-This remains a runtime foundation rather than a complete hosted product: profile
-history and approvals are retained only in process memory, and the host must mount
-the handler, supply authenticated identity/session and CSRF protections, and provide
-durable storage if history must survive restarts. API keys remain server-side.
+Use Node.js 22.13 or newer (the built-in `node:sqlite` module is currently
+experimental). Configure these environment variables before startup:
+
+- `SESSION_SECRET`: random secret of at least 32 bytes used to sign session cookies.
+- `DAN_USER_ID`: stable server-side identity for the single workspace account.
+- `DAN_PASSWORD`: workspace login password, at least 12 bytes.
+- `OPENAI_API_KEY` and `ANTHROPIC_API_KEY`: server-side model credentials.
+- `DATABASE_PATH`: SQLite file path; defaults to `./data/assistant.sqlite`.
+- `PORT`: HTTP port; defaults to `3000`.
+- `HOST`: listen address; defaults to `127.0.0.1`.
+- `PUBLIC_ORIGIN`: optional exact HTTP(S) origin for deployments behind a TLS
+  reverse proxy; configure it to the browser-visible origin so POST origin checks
+  do not trust forwarded headers.
+- `COOKIE_SECURE`: explicitly set `true` or `false`; defaults to secure cookies except
+  when `NODE_ENV=development`. Use HTTPS and secure cookies outside local development.
+
+For local development:
+
+```sh
+cd packages/studio
+export SESSION_SECRET="$(openssl rand -base64 48)"
+export DAN_USER_ID="dan"
+export DAN_PASSWORD="replace-with-a-long-local-password"
+export OPENAI_API_KEY="..."
+export ANTHROPIC_API_KEY="..."
+NODE_ENV=development npm start
+```
+
+The browser receives an HttpOnly, SameSite=Strict signed session cookie. Each
+state-changing API request must also pass same-origin validation and the CSRF token
+issued for that server-verified session. The server never accepts identity from
+request bodies or headers. This starter uses one configured workspace account;
+production account lifecycle, HTTPS termination, backups, and operational database
+management remain responsibilities of the deployer. API keys remain server-side.
 This does not import ChatGPT's private memory or transfer an existing assistant.
 
 ## Entry point

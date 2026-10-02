@@ -47,12 +47,18 @@ export function createAssistantRuntime({
   githubTransport,
   sharedBusinessKnowledge = [],
   authorizeDanAction = () => false,
+  memoryStore: configuredMemoryStore,
+  approvalStore,
 }) {
   const auditLogger = createAuditLogger();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
   const permissionChecker = (permission) => hasPermission(permissions, permission);
   const rateLimiter = createRateLimiter();
-  const actionApprovals = createActionApprovals({ auditLogger, authorizeDanAction });
+  const actionApprovals = createActionApprovals({
+    auditLogger,
+    authorizeDanAction,
+    approvalStore,
+  });
 
   const pluginRegistry = createPluginRegistry({
     featureFlags,
@@ -105,7 +111,7 @@ export function createAssistantRuntime({
       ?? (process.env.ANTHROPIC_API_KEY ? createClaudeTransport() : undefined),
     auditLogger,
   });
-  const memoryStore = createMemoryStore({ auditLogger });
+  const memoryStore = configuredMemoryStore ?? createMemoryStore({ auditLogger });
   const assistantProfiles = createAssistantProfiles({
     memoryStore,
     modelGateway,

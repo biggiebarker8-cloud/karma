@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Karma · Two-assistant chat</title>
+    <link rel="stylesheet" href="/app.css">
+    <script src="/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <p class="eyebrow">Karma workspace</p>
+        <h1>Two-assistant chat</h1>
+        <p>Chat with Karma, Collaborator, or both. Profile histories stay separate; shared facts need your review.</p>
+      </header>
+
+      <section id="login-panel" class="panel" aria-labelledby="login-heading">
+        <h2 id="login-heading">Sign in</h2>
+        <form id="login-form">
+          <label for="password">Workspace password</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required>
+          <button type="submit">Sign in</button>
+        </form>
+      </section>
+
+      <div id="workspace" hidden>
+        <div class="account-row">
+          <p>Signed in as <strong id="user-label"></strong></p>
+          <button id="logout-button" class="secondary" type="button">Sign out</button>
+        </div>
+
+        <section class="panel" aria-labelledby="chat-heading">
+          <h2 id="chat-heading">Chat</h2>
+          <form id="chat-form">
+            <label for="chat-mode">Assistant</label>
+            <select id="chat-mode">
+              <option value="karma">Karma</option>
+              <option value="collaborator">Collaborator</option>
+              <option value="together">Together</option>
+            </select>
+            <label id="review-option" class="inline-option" hidden>
+              <input id="include-review" type="checkbox">
+              Include one Karma review
+            </label>
+            <label for="prompt">Message</label>
+            <textarea id="prompt" rows="4" maxlength="12000" required></textarea>
+            <button id="send-button" type="submit">Send</button>
+          </form>
+        </section>
+
+        <section class="panel" aria-labelledby="history-heading">
+          <h2 id="history-heading">Conversation history</h2>
+          <div id="history" class="entries"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="facts-heading">
+          <h2 id="facts-heading">Shared facts</h2>
+          <ul id="approved-facts"></ul>
+          <form id="fact-form" hidden>
+            <label for="fact-input">Propose a fact for review</label>
+            <input id="fact-input" maxlength="2000" required>
+            <button type="submit">Submit for review</button>
+          </form>
+          <div id="pending-facts"></div>
+        </section>
+
+        <section id="approvals-panel" class="panel" aria-labelledby="approvals-heading" hidden>
+          <h2 id="approvals-heading">Sensitive action approvals</h2>
+          <div id="approvals"></div>
+        </section>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
+    </main>
+  </body>
+</html>
