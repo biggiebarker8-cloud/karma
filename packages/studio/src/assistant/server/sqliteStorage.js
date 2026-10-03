@@ -57,6 +57,13 @@ export function createAssistantSqliteStorage(databasePath, { auditLogger } = {})
     );
     CREATE INDEX IF NOT EXISTS assistant_sessions_expiry
       ON assistant_sessions(expires_at);
+    CREATE TABLE IF NOT EXISTS provider_oauth_tokens (
+      provider TEXT NOT NULL,
+      tenant_id TEXT NOT NULL,
+      encrypted_token_set TEXT NOT NULL,
+      updated_at INTEGER NOT NULL,
+      PRIMARY KEY (provider, tenant_id)
+    );
   `);
   chmodSync(path, 0o600);
 
@@ -85,6 +92,19 @@ export function createAssistantSqliteStorage(databasePath, { auditLogger } = {})
   );
   const removeSession = db.prepare('DELETE FROM assistant_sessions WHERE id = ?');
   const removeExpiredSessions = db.prepare('DELETE FROM assistant_sessions WHERE expires_at <= ?');
+  const getProviderToken = db.prepare(
+    'SELECT encrypted_token_set FROM provider_oauth_tokens WHERE provider = ? AND tenant_id = ?',
+  );
+  const setProviderToken = db.prepare(`
+    INSERT INTO provider_oauth_tokens(provider, tenant_id, encrypted_token_set, updated_at)
+    VALUES (?, ?, ?, ?)
+    ON CONFLICT(provider, tenant_id) DO UPDATE SET
+      encrypted_token_set = excluded.encrypted_token_set,
+      updated_at = excluded.updated_at
+  `);
+  const deleteProviderToken = db.prepare(
+    'DELETE FROM provider_oauth_tokens WHERE provider = ? AND tenant_id = ?',
+  );
 
   const memoryStore = {
     write(scope, value) {
@@ -166,10 +186,23 @@ export function createAssistantSqliteStorage(databasePath, { auditLogger } = {})
     },
   };
 
+  const integrationTokenRepository = {
+    get(provider, tenantId) {
+      return getProviderToken.get(provider, tenantId)?.encrypted_token_set ?? null;
+    },
+    set(provider, tenantId, encryptedTokenSet) {
+      setProviderToken.run(provider, tenantId, encryptedTokenSet, Date.now());
+    },
+    delete(provider, tenantId) {
+      deleteProviderToken.run(provider, tenantId);
+    },
+  };
+
   return {
     memoryStore,
     approvalStore,
     sessionStore,
+    integrationTokenRepository,
     close() {
       db.close();
     },

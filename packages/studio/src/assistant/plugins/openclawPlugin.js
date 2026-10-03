@@ -6,6 +6,7 @@ const OPENCLAW_SUPPORTED_ACTIONS = Object.freeze([
   'get-standalone-app-config',
   'setup-agency-workspace',
   'setup-tiktok-dashboard',
+  'create-evidence-register',
   'grant-ai-solutions-permissions',
   'document-larks-handoff',
 ]);
@@ -28,11 +29,31 @@ function getStandaloneAppConfig(context = {}) {
   };
 }
 
+function getCreatorAllianceContext() {
+  return {
+    legalEntity: {
+      name: 'Creator Alliance Networks Pty Ltd',
+      jurisdiction: 'Australia',
+      abn: '55 700 905 157',
+      acn: '700 905 157',
+    },
+    officialDomain: 'https://creativealliancenetwork.com',
+    separateProjects: [
+      {
+        name: 'Goated Guardians',
+        relationship: 'separate internal/project name; not independently verified',
+      },
+    ],
+    unverifiedAssociations: ['creatoralliance.org', 'Caribbean Creators Alliance'],
+  };
+}
+
 function getAgencyWorkspacePlan(context = {}) {
   return {
     workspace: context.workspace || 'agency',
     areas: ['client-onboarding', 'content-operations', 'reporting', 'approvals'],
     recommendedIntegrations: ['openclaw', 'tiktok', 'canva', 'shopify', 'amazon'],
+    organization: getCreatorAllianceContext(),
     documentationReady: true,
   };
 }
@@ -41,8 +62,44 @@ function getTikTokDashboardPlan(context = {}) {
   return {
     dashboardId: context.dashboardId || 'tiktok-operations',
     sections: ['campaign-overview', 'content-calendar', 'engagement-signals', 'handoff-notes'],
+    organization: getCreatorAllianceContext(),
     automationReady: true,
     documentationReady: true,
+  };
+}
+
+function createEvidenceRegister(context = {}) {
+  const entries = context.entries ?? [];
+  if (!Array.isArray(entries)) {
+    throw new Error('Evidence register entries must be an array');
+  }
+
+  return {
+    subject: 'Creator Alliance Networks Pty Ltd',
+    allowedSources: ['user-provided material', 'independently verifiable public sources'],
+    assessmentLimit: 'This action records supplied information; it does not independently verify sources or claims.',
+    entries: entries.map((entry) => {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+        throw new Error('Each evidence register entry must be an object');
+      }
+      if (!['user-provided', 'public-source'].includes(entry.sourceType)) {
+        throw new Error('Each evidence register entry must identify a user-provided or public source');
+      }
+
+      return {
+        sourceType: entry.sourceType,
+        date: entry.date || 'Not supplied',
+        source: entry.source || 'Not supplied',
+        fileOrScreenshotName: entry.fileOrScreenshotName || 'Not supplied',
+        exactFactualClaim: entry.exactFactualClaim || 'Not supplied',
+        whatEvidenceProves: entry.whatEvidenceProves || 'Not assessed',
+        whatRemainsUnverified: entry.whatRemainsUnverified || 'Not assessed',
+        tikTokStatementCompared: entry.tikTokStatementCompared || 'No prior TikTok statement supplied for comparison',
+        contradictionWithTikTok: entry.contradictionWithTikTok || 'Not assessed',
+        relevance: entry.relevance || 'Not assessed',
+        verificationStatus: 'Not independently verified by this action',
+      };
+    }),
   };
 }
 
@@ -106,6 +163,13 @@ export function createOpenclawPlugin(deps) {
             action,
             status: 'ready',
             dashboard: getTikTokDashboardPlan(context),
+          };
+        case 'create-evidence-register':
+          return {
+            platform: 'openclaw',
+            action,
+            status: 'ready',
+            register: createEvidenceRegister(context),
           };
         case 'grant-ai-solutions-permissions':
           return {

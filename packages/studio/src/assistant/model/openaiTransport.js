@@ -4,6 +4,7 @@ export function createOpenAITransport({
   apiKey = process.env.OPENAI_API_KEY,
   fetchImpl = globalThis.fetch,
   endpoint = DEFAULT_ENDPOINT,
+  timeoutMs = 30_000,
 } = {}) {
   if (!apiKey) {
     throw new Error('OpenAI transport requires OPENAI_API_KEY');
@@ -19,6 +20,7 @@ export function createOpenAITransport({
         authorization: 'Bearer ' + apiKey,
         'content-type': 'application/json',
       },
+      signal: AbortSignal.timeout(timeoutMs),
       body: JSON.stringify({
         model,
         messages: [{ role: 'user', content: prompt }],
@@ -32,8 +34,8 @@ export function createOpenAITransport({
 
     const payload = await response.json();
     const content = payload?.choices?.[0]?.message?.content;
-    if (typeof content !== 'string') {
-      throw new Error('OpenAI response did not contain message content');
+    if (typeof content !== 'string' || !content.trim()) {
+      throw new Error('OpenAI response did not contain non-empty message content');
     }
     return content;
   };

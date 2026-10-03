@@ -1,4 +1,4 @@
-const PROTECTED_ACTION = /\b(spend(?:ing)?|pay(?:ment)?|purchase|buy|checkout|charge|transfer|publish|post|delete|remove|erase|destroy|account|connect|disconnect|grant|revoke)\b/i;
+const PROTECTED_ACTION = /\b(spend(?:ing)?|pay(?:ment)?|purchase|buy|checkout|charge|transfer|publish|post|send|delete|remove|erase|destroy|account|connect|disconnect|grant|revoke|write|update|edit|admin(?:ister|istration)?|configure)\b/i;
 
 function actionKey(profile, pluginId, action, context) {
   const actionContext = approvalContext(context);
