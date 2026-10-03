@@ -107,17 +107,53 @@ function createEvidenceRegister(context = {}) {
 }
 
 function addToEvidenceChain(context = {}) {
-  const existingRegister = context.register ?? context.chain ?? {};
-  const baseEntries = Array.isArray(existingRegister.entries) ? existingRegister.entries : [];
+  const registerLike = context.register ?? context.chain ?? {};
+  const baseEntries = Array.isArray(registerLike.entries)
+    ? registerLike.entries
+    : Array.isArray(registerLike) ? registerLike : [];
+
+  const candidateCollections = [
+    context.previousEvidence,
+    context.previousEntries,
+    context.entries,
+    context.evidence,
+    context.entry,
+    context.newEvidence,
+    context.additions,
+    context.currentEvidence,
+  ];
+
   const additions = [];
+  const pushCandidates = (value) => {
+    if (value === null || value === undefined) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => pushCandidates(item));
+      return;
+    }
+    if (typeof value === 'object') {
+      if (Array.isArray(value.entries)) {
+        value.entries.forEach((item) => additions.push(item));
+      }
+      if (Array.isArray(value.evidence)) {
+        value.evidence.forEach((item) => additions.push(item));
+      }
+      if (Array.isArray(value.previousEvidence)) {
+        value.previousEvidence.forEach((item) => additions.push(item));
+      }
+      if (Array.isArray(value.previousEntries)) {
+        value.previousEntries.forEach((item) => additions.push(item));
+      }
+      if (value.sourceType || value.exactFactualClaim || value.fileOrScreenshotName) {
+        additions.push(value);
+      }
+      return;
+    }
+    throw new Error('Evidence chain update requires evidence entries, not a scalar value');
+  };
 
-  if (context.entry !== undefined || context.evidence !== undefined) {
-    additions.push(context.entry ?? context.evidence);
-  }
-
-  if (Array.isArray(context.entries)) {
-    additions.push(...context.entries);
-  }
+  candidateCollections.forEach(pushCandidates);
 
   if (additions.length === 0) {
     throw new Error('Evidence chain update requires at least one entry');
