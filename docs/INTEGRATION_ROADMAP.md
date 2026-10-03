@@ -10,6 +10,14 @@
 
 All provider credentials, client secrets, access/refresh tokens, and signing keys must remain server-side. Do not commit them or expose them to browser code. Any future write, publish, spend, account connection, permission change, or admin action must retain exact owner approval bound to that operation and its parameters.
 
+## Verified connections and reconnect behavior
+
+- Validate a provider integration using its official authorization flow and a controlled account. A business document, remembered personal detail, configured token, mock response, or successful setup plan is not proof that an account connection is valid.
+- Establish a connection only after an authorized account owner completes the provider's OAuth/consent flow and approves the requested least-privilege scopes. Store tokens only in the server-side encrypted token store, associated with the provider and tenant.
+- A later reconnect may reuse a still-valid stored authorization without repeating consent only while the provider confirms the token is valid, unexpired, unrevoked, and retains the approved scopes. If validation fails, scopes change, or consent is revoked, stop and ask the owner to reauthorize; do not silently connect another account or expand permissions.
+- Keep account connection distinct from action approval. Publishing, account changes, spending, permission changes, and administration still require the exact owner approval described above, even after a connection is validated.
+- Record validation outcome and time, provider, tenant/account reference, granted scopes, and token status in the server audit trail. Never log tokens or unnecessary personal data. Mark an integration **DONE** only under the status rules above.
+
 ## Phase 1 — Existing authenticated code paths
 
 ### OpenAI
