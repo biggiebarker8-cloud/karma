@@ -28,11 +28,31 @@ function getStandaloneAppConfig(context = {}) {
   };
 }
 
+function getCreatorAllianceContext() {
+  return {
+    legalEntity: {
+      name: 'Creator Alliance Networks Pty Ltd',
+      jurisdiction: 'Australia',
+      abn: '55 700 905 157',
+      acn: '700 905 157',
+    },
+    officialDomain: 'https://creativealliancenetwork.com',
+    separateProjects: [
+      {
+        name: 'Goated Guardians',
+        relationship: 'separate internal/project name; not independently verified',
+      },
+    ],
+    unverifiedAssociations: ['creatoralliance.org', 'Caribbean Creators Alliance'],
+  };
+}
+
 function getAgencyWorkspacePlan(context = {}) {
   return {
     workspace: context.workspace || 'agency',
     areas: ['client-onboarding', 'content-operations', 'reporting', 'approvals'],
     recommendedIntegrations: ['openclaw', 'tiktok', 'canva', 'shopify', 'amazon'],
+    organization: getCreatorAllianceContext(),
     documentationReady: true,
   };
 }
@@ -41,6 +61,7 @@ function getTikTokDashboardPlan(context = {}) {
   return {
     dashboardId: context.dashboardId || 'tiktok-operations',
     sections: ['campaign-overview', 'content-calendar', 'engagement-signals', 'handoff-notes'],
+    organization: getCreatorAllianceContext(),
     automationReady: true,
     documentationReady: true,
   };
