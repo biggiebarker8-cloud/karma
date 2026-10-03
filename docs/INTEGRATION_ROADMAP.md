@@ -34,9 +34,9 @@ All provider credentials, client secrets, access/refresh tokens, and signing key
 
 - **Current status:** PARTIAL. A bearer-token read transport exists, with exact repository allowlisting and bounded pagination. No live account call has been established.
 - **Credentials/config:** Server-side `GITHUB_TOKEN` and `GITHUB_ALLOWED_REPOSITORIES` (comma-separated exact `owner/repository` values); `githubEnabled` and `github:read` must be enabled/granted.
-- **Scopes:** Prefer a GitHub App installation token or fine-grained token restricted to allowlisted repositories. Use Metadata: read and Contents: read for repository/file reads. Confirm Code Search permissions for the selected token/account before enabling search.
-- **Backend work:** Existing transport is read-only. Add/verify provider rate-limit handling and operational live-result recording; retain repository allowlisting.
-- **Tests:** Mocks cover calls and allowlist denial. Add opt-in real reads for an allowlisted test repository/file and denial cases for out-of-scope repositories.
+- **Scopes:** Prefer a GitHub App installation token or fine-grained token restricted to allowlisted repositories. Use Metadata: read and Contents: read for repository/file reads. Confirm Code Search permissions for the selected token/account before enabling search. No scope changes are made by this implementation.
+- **Backend work:** Existing transport is read-only. Retain repository allowlisting; operational live-result recording remains outstanding.
+- **Tests:** Mocks cover calls and allowlist denial. The opt-in real test reads an allowlisted repository and non-empty file; configure `GITHUB_LIVE_TEST_FILE` with a controlled test-file path.
 - **Approval gates:** Reads need no owner approval by default. Any future write, spend, permission change, or admin action must be separately implemented and owner-approved.
 - **DONE:** Real authenticated reads of an allowlisted controlled repository and file succeed; out-of-scope requests fail; no write operation is exposed.
 
@@ -54,11 +54,11 @@ All provider credentials, client secrets, access/refresh tokens, and signing key
 
 ### OAuth, token persistence, and tenant isolation
 
-- **Current status:** PLACEHOLDER. `oauthTokenStore.js` uses an in-memory map only.
-- **Credentials/config:** Provider app IDs/secrets, redirect URIs, encryption key management, and persistence are not configured.
+- **Current status:** PARTIAL foundation. Redirect allowlisting, PKCE/state binding, and encrypted persistent tenant-scoped token storage are implemented. There is no provider authorization/callback route or token exchange yet.
+- **Credentials/config:** Provider app IDs/secrets, redirect URIs, and `INTEGRATION_TOKEN_ENCRYPTION_KEY` (64 hex characters representing 32 bytes) must be configured by the deployment owner. The key is not generated or stored by the app.
 - **Scopes:** None until provider, product, operations, data owner, and minimum scopes are specified and approved.
-- **Backend work:** Implement state/CSRF and redirect validation; encrypted persistent tokens; refresh/revocation; tenant/account mapping; least-privilege grants; secret rotation; audit records. Keep tokens out of logs and browser responses.
-- **Tests:** State mismatch, expiry/revocation, refresh, encryption at rest, tenant isolation, provider errors, and controlled OAuth flow with test applications.
+- **Backend work:** Implement provider-specific authorization/callback and code exchange only after its app configuration and exact least-privilege scopes are approved. Refresh/revocation, secret rotation, and controlled end-to-end OAuth remain outstanding. Tokens remain server-side and are encrypted at rest.
+- **Tests:** State/provider/tenant/redirect mismatch, one-time use, transaction expiry, token expiry, encryption at rest, persistence, and tenant isolation have unit coverage. Provider errors and a controlled OAuth flow remain unverified.
 - **Approval gates:** Owner approval for account connection/disconnection, scope grants/revocations, and administration.
 - **DONE:** A controlled provider test account completes OAuth, encrypted tokens persist and refresh/revoke, tenant isolation holds, and credentials never reach client/log output.
 

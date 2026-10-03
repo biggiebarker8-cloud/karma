@@ -139,6 +139,7 @@ export function createAssistantApp({
       ...runtimeOptions,
       memoryStore: storage.memoryStore,
       approvalStore: storage.approvalStore,
+      integrationTokenRepository: storage.integrationTokenRepository,
       authorizeDanAction: (_operation, identity) => identity?.id === danUserId,
     });
     configureRuntime?.(runtime);

@@ -24,8 +24,8 @@ secret.
   and Render supplies `PORT`.
 - SQLite path: `DATABASE_PATH`, set to `/var/data/assistant.sqlite` on the
   persistent disk. The app creates the containing directory and database.
-- Profile histories, proposed/approved shared facts, sessions, and action
-  approvals persist in SQLite. The SQLite `-wal` and `-shm` files are created
+- Profile histories, proposed/approved shared facts, sessions, action
+  approvals, and encrypted provider token sets persist in SQLite. The SQLite `-wal` and `-shm` files are created
   beside the database and therefore also reside on the disk.
 
 ## Mobile web app
@@ -62,6 +62,14 @@ GitHub repository reads are optional. If enabled, set `GITHUB_TOKEN` and
 must be a comma-separated allowlist of exact `owner/repository` names. Requests
 for repositories outside that list are denied. Never configure a broad token
 when a repository-scoped fine-grained token will work.
+
+OAuth token persistence is available only when the server is configured with
+`INTEGRATION_TOKEN_ENCRYPTION_KEY`, a 64-character hexadecimal value representing
+32 random bytes. Keep it in the deployment secret manager and back it up
+separately from the database; losing or rotating it without re-encrypting stored
+tokens makes those tokens unreadable. OAuth provider authorization and callback
+routes are not yet enabled, so do not configure new provider scopes for this
+foundation alone.
 
 The Blueprint also sets `NODE_ENV=production`, `HOST=0.0.0.0`,
 `DATABASE_PATH=/var/data/assistant.sqlite`, and `COOKIE_SECURE=true`. Render

@@ -41,6 +41,7 @@ test('live GitHub authenticated allowlisted repository read', {
   assert.ok(process.env.GITHUB_TOKEN, 'GITHUB_TOKEN is required');
   assert.ok(process.env.GITHUB_ALLOWED_REPOSITORIES, 'GITHUB_ALLOWED_REPOSITORIES is required');
   assert.ok(process.env.GITHUB_LIVE_TEST_REPOSITORY, 'GITHUB_LIVE_TEST_REPOSITORY is required');
+  assert.ok(process.env.GITHUB_LIVE_TEST_FILE, 'GITHUB_LIVE_TEST_FILE is required');
 
   const repositoryParts = process.env.GITHUB_LIVE_TEST_REPOSITORY.split('/');
   assert.equal(repositoryParts.length, 2, 'GITHUB_LIVE_TEST_REPOSITORY must be exactly owner/repository');
@@ -55,7 +56,15 @@ test('live GitHub authenticated allowlisted repository read', {
   );
 
   const transport = createGitHubTransport();
-  const response = await transport({ owner, repo });
+  const repository = await transport({ owner, repo });
+  const file = await transport({
+    owner,
+    repo,
+    path: `/contents/${process.env.GITHUB_LIVE_TEST_FILE.split('/').map(encodeURIComponent).join('/')}`,
+  });
 
-  assert.equal(`${response.owner.login}/${response.name}`.toLowerCase(), `${owner}/${repo}`.toLowerCase());
+  assert.equal(`${repository.owner.login}/${repository.name}`.toLowerCase(), `${owner}/${repo}`.toLowerCase());
+  assert.equal(file.type, 'file');
+  assert.equal(file.encoding, 'base64');
+  assert.ok(Buffer.from(file.content, 'base64').length > 0, 'The configured test file must not be empty');
 });

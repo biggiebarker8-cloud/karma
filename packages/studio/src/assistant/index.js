@@ -32,6 +32,8 @@ import { createGitHubPlugin } from './plugins/githubPlugin.js';
 import { createGitHubTransport } from './github/githubTransport.js';
 import { createActionApprovals } from './collaboration/actionApprovals.js';
 import { createAssistantProfiles } from './collaboration/assistantProfiles.js';
+import { createOauthTokenStore } from './plugins/oauthTokenStore.js';
+import { createOauthTransactionStore } from './plugins/oauthTransactionStore.js';
 
 export function createAssistantRuntime({
   featureFlagOverrides = {},
@@ -50,8 +52,18 @@ export function createAssistantRuntime({
   authorizeDanAction = () => false,
   memoryStore: configuredMemoryStore,
   approvalStore,
+  integrationTokenRepository,
+  integrationTokenEncryptionKey = process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY,
 }) {
   const auditLogger = createAuditLogger();
+  const oauthTokenStore = integrationTokenEncryptionKey && integrationTokenRepository
+    ? createOauthTokenStore({
+      repository: integrationTokenRepository,
+      encryptionKey: integrationTokenEncryptionKey,
+      auditLogger,
+    })
+    : null;
+  const oauthTransactionStore = createOauthTransactionStore();
   const featureFlags = createFeatureFlags(featureFlagOverrides);
   const permissionChecker = (permission) => hasPermission(permissions, permission);
   const rateLimiter = createRateLimiter();
@@ -156,6 +168,8 @@ export function createAssistantRuntime({
     pluginRegistry,
     modelGateway,
     memoryStore,
+    oauthTokenStore,
+    oauthTransactionStore,
     assistantProfiles,
     hearingAdapter,
     voiceAdapter,
