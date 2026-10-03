@@ -20,6 +20,7 @@ I have records of the steps, requests, and changing requirements. To make the hi
 6. **Equipment and service expenses** — [dates; receipts for the iMac, screens, Lark Pro, and other relevant costs]
 7. **Possible impersonation incident** — [date/time; the message and sender details, with sensitive information redacted where appropriate]
 8. **Reports and support follow-ups** — [dates; ASIC or other report references and TikTok ticket messages]
+9. **New TikTok support request** — [submission date/time and ticket/reference number not supplied]; the support flow showed **Account** as the issue type and confirmed “Support request sent.” The request said: “I just want to honestly know what will it take for you to follow your word and do right thing by Md without going any other routes they”. A follow-up message explained that I want to start a genuine, creator-focused agency, said I had followed the requested steps, and asked for assistance and support. The status shown is **In review**; TikTok said a reply may take a few hours. No reply is included in the material provided so far.
 
 I’m concerned that someone using an email address that appeared to be associated with ByteDance may have obtained my information. I can provide the relevant message and report references for review. Please tell me the secure, official way to submit any sensitive documents; I will not include identity documents or reference numbers in this message.
 
