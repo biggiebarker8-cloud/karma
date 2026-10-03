@@ -7,11 +7,10 @@ services:
     buildCommand: npm install
     startCommand: npm start
     healthCheckPath: /
-    disk:
-      name:healthcheckpass:/
-      mountPath: envVars:
-      sizeGB: 1
-    envVars:
+    disk:disk:
+  name:healthcheckpass:/
+  mountPath: envVars:
+  sizeGB: 1
       - key: NODE_ENV
         value: production
       - key: HOST
