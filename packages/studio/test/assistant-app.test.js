@@ -70,8 +70,27 @@ test('host app authenticates, enforces CSRF, and persists history and single-use
 
   const page = await fetch(baseUrl);
   assert.equal(page.status, 200);
-  assert.match(await page.text(), /Two-assistant chat/);
+  const pageText = await page.text();
+  assert.match(pageText, /Two-assistant chat/);
   assert.equal((await fetch(`${baseUrl}/app.js`)).status, 200);
+  assert.match(pageText, /viewport-fit=cover/);
+  assert.match(pageText, /apple-mobile-web-app-capable/);
+  assert.match(pageText, /rel="manifest"/);
+  const manifestResponse = await fetch(`${baseUrl}/manifest.json`);
+  assert.equal(manifestResponse.headers.get('content-type'), 'application/manifest+json; charset=utf-8');
+  const manifest = await manifestResponse.json();
+  assert.equal(manifest.display, 'standalone');
+  assert.deepEqual(manifest.icons.map(({ sizes }) => sizes), ['192x192', '512x512']);
+  for (const asset of [
+    '/service-worker.js',
+    '/icons/apple-touch-icon.png',
+    '/icons/icon-192.png',
+    '/icons/icon-512.png',
+  ]) {
+    const response = await fetch(`${baseUrl}${asset}`);
+    assert.equal(response.status, 200, `${asset} should be served`);
+    if (asset.endsWith('.png')) assert.equal(response.headers.get('content-type'), 'image/png');
+  }
 
   assert.equal((await call('/api/assistant/session')).response.status, 401);
   const forged = await call('/api/assistant/history?profile=karma', {
@@ -96,6 +115,7 @@ test('host app authenticates, enforces CSRF, and persists history and single-use
   const setCookie = login.response.headers.get('set-cookie');
   assert.match(setCookie, /HttpOnly/);
   assert.match(setCookie, /SameSite=Strict/);
+  assert.match(setCookie, /Max-Age=43200/);
   const cookie = setCookie.split(';', 1)[0];
   const csrfToken = login.body.csrfToken;
   call = client(baseUrl, cookie, csrfToken);

@@ -206,3 +206,9 @@ async function restoreSession() {
 }
 
 restoreSession();
+
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js').catch(() => {});
+  }, { once: true });
+}
