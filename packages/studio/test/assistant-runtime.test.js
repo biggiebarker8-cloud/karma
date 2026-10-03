@@ -28,6 +28,37 @@ test('compatibility entrypoint exports the canonical runtime factory', () => {
   assert.strictEqual(compatibilityRuntime, canonicalRuntime);
 });
 
+test('agency and TikTok dashboard plans preserve the supplied organization distinctions', async () => {
+  const runtime = createRuntime([PERMISSIONS.OPENCLAW_MANAGE]);
+
+  const { workspace } = await runtime.pluginRegistry.execute(
+    'openclaw',
+    'setup-agency-workspace',
+  );
+  const { dashboard } = await runtime.pluginRegistry.execute(
+    'openclaw',
+    'setup-tiktok-dashboard',
+  );
+
+  for (const organization of [workspace.organization, dashboard.organization]) {
+    assert.deepEqual(organization.legalEntity, {
+      name: 'Creator Alliance Networks Pty Ltd',
+      jurisdiction: 'Australia',
+      abn: '55 700 905 157',
+      acn: '700 905 157',
+    });
+    assert.equal(organization.officialDomain, 'https://creativealliancenetwork.com');
+    assert.deepEqual(organization.separateProjects, [{
+      name: 'Goated Guardians',
+      relationship: 'separate internal/project name; not independently verified',
+    }]);
+    assert.deepEqual(organization.unverifiedAssociations, [
+      'creatoralliance.org',
+      'Caribbean Creators Alliance',
+    ]);
+  }
+});
+
 test('model gateway defaults to an OpenAI model', async () => {
   let request;
   const gateway = createModelGateway({
