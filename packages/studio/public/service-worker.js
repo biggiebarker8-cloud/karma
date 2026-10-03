@@ -3,7 +3,7 @@ const SHELL_ASSETS = [
   '/',
   '/app.css',
   '/app.js',
-  '/manifest.webmanifest',
+  '/manifest.json',
   '/icons/apple-touch-icon.png',
   '/icons/icon-192.png',
   '/icons/icon-512.png',

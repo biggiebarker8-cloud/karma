@@ -13,8 +13,8 @@ const STATIC_ASSETS = new Map([
   ['/', [HTML_PATH, 'text/html; charset=utf-8']],
   ['/app.js', [SCRIPT_PATH, 'text/javascript; charset=utf-8']],
   ['/app.css', [STYLES_PATH, 'text/css; charset=utf-8']],
-  ['/manifest.webmanifest', [
-    fileURLToPath(new URL('../../../public/manifest.webmanifest', import.meta.url)),
+  ['/manifest.json', [
+    fileURLToPath(new URL('../../../public/manifest.json', import.meta.url)),
     'application/manifest+json; charset=utf-8',
   ]],
   ['/service-worker.js', [

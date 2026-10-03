@@ -76,7 +76,7 @@ test('host app authenticates, enforces CSRF, and persists history and single-use
   assert.match(pageText, /viewport-fit=cover/);
   assert.match(pageText, /apple-mobile-web-app-capable/);
   assert.match(pageText, /rel="manifest"/);
-  const manifestResponse = await fetch(`${baseUrl}/manifest.webmanifest`);
+  const manifestResponse = await fetch(`${baseUrl}/manifest.json`);
   assert.equal(manifestResponse.headers.get('content-type'), 'application/manifest+json; charset=utf-8');
   const manifest = await manifestResponse.json();
   assert.equal(manifest.display, 'standalone');
