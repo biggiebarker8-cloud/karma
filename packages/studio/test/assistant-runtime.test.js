@@ -116,6 +116,79 @@ test('evidence register starts empty and rejects entries without source provenan
   );
 });
 
+test('evidence chain appends new supplied material without re-verifying claims', async () => {
+  const runtime = createRuntime([PERMISSIONS.OPENCLAW_MANAGE]);
+  const existing = await runtime.pluginRegistry.execute('openclaw', 'create-evidence-register', {
+    entries: [{
+      sourceType: 'public-source',
+      date: '2026-10-01',
+      source: 'Public company register',
+      fileOrScreenshotName: 'company-record.pdf',
+      exactFactualClaim: 'The record lists the company as active.',
+      whatEvidenceProves: 'The supplied record displays active status.',
+      whatRemainsUnverified: 'Whether TikTok has an agency relationship with the company.',
+      tikTokStatementCompared: 'No statement provided.',
+      contradictionWithTikTok: 'No contradiction assessed.',
+      relevance: 'May help establish the company identity.',
+    }],
+  });
+
+  const updated = await runtime.pluginRegistry.execute('openclaw', 'add-to-evidence-chain', {
+    register: existing.register,
+    entry: {
+      sourceType: 'user-provided',
+      date: '2026-10-02',
+      source: 'Agency brief',
+      fileOrScreenshotName: 'brief.pdf',
+      exactFactualClaim: 'The project is a separate internal initiative.',
+      whatEvidenceProves: 'The brief describes it as a separate project.',
+      whatRemainsUnverified: 'Whether it is formally independent from the company.',
+      tikTokStatementCompared: 'No TikTok statement supplied.',
+      contradictionWithTikTok: 'No contradiction assessed.',
+      relevance: 'Clarifies project boundaries.',
+    },
+  });
+
+  assert.equal(updated.register.chainLength, 2);
+  assert.equal(updated.register.chainStatus, 'Evidence recorded; not independently verified by this action');
+  assert.equal(updated.register.entries[1].sourceType, 'user-provided');
+  assert.equal(updated.register.entries[1].verificationStatus, 'Not independently verified by this action');
+});
+
+test('evidence chain combines prior and new evidence payloads when provided together', async () => {
+  const runtime = createRuntime([PERMISSIONS.OPENCLAW_MANAGE]);
+  const combined = await runtime.pluginRegistry.execute('openclaw', 'add-to-evidence-chain', {
+    previousEvidence: [{
+      sourceType: 'public-source',
+      date: '2026-10-01',
+      source: 'Public company register',
+      fileOrScreenshotName: 'company-record.pdf',
+      exactFactualClaim: 'The record lists the company as active.',
+      whatEvidenceProves: 'The supplied record displays active status.',
+      whatRemainsUnverified: 'Whether TikTok has an agency relationship with the company.',
+      tikTokStatementCompared: 'No statement provided.',
+      contradictionWithTikTok: 'No contradiction assessed.',
+      relevance: 'May help establish the company identity.',
+    }],
+    entries: [{
+      sourceType: 'user-provided',
+      date: '2026-10-02',
+      source: 'Agency brief',
+      fileOrScreenshotName: 'brief.pdf',
+      exactFactualClaim: 'The project is a separate internal initiative.',
+      whatEvidenceProves: 'The brief describes it as a separate project.',
+      whatRemainsUnverified: 'Whether it is formally independent from the company.',
+      tikTokStatementCompared: 'No TikTok statement supplied.',
+      contradictionWithTikTok: 'No contradiction assessed.',
+      relevance: 'Clarifies project boundaries.',
+    }],
+  });
+
+  assert.equal(combined.register.chainLength, 2);
+  assert.equal(combined.register.entries[0].sourceType, 'public-source');
+  assert.equal(combined.register.entries[1].sourceType, 'user-provided');
+});
+
 test('model gateway defaults to an OpenAI model', async () => {
   let request;
   const gateway = createModelGateway({

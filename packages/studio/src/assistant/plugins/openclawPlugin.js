@@ -7,6 +7,7 @@ const OPENCLAW_SUPPORTED_ACTIONS = Object.freeze([
   'setup-agency-workspace',
   'setup-tiktok-dashboard',
   'create-evidence-register',
+  'add-to-evidence-chain',
   'grant-ai-solutions-permissions',
   'document-larks-handoff',
 ]);
@@ -68,6 +69,29 @@ function getTikTokDashboardPlan(context = {}) {
   };
 }
 
+function validateEvidenceEntry(entry) {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+    throw new Error('Each evidence register entry must be an object');
+  }
+  if (!['user-provided', 'public-source'].includes(entry.sourceType)) {
+    throw new Error('Each evidence register entry must identify a user-provided or public source');
+  }
+
+  return {
+    sourceType: entry.sourceType,
+    date: entry.date || 'Not supplied',
+    source: entry.source || 'Not supplied',
+    fileOrScreenshotName: entry.fileOrScreenshotName || 'Not supplied',
+    exactFactualClaim: entry.exactFactualClaim || 'Not supplied',
+    whatEvidenceProves: entry.whatEvidenceProves || 'Not assessed',
+    whatRemainsUnverified: entry.whatRemainsUnverified || 'Not assessed',
+    tikTokStatementCompared: entry.tikTokStatementCompared || 'No prior TikTok statement supplied for comparison',
+    contradictionWithTikTok: entry.contradictionWithTikTok || 'Not assessed',
+    relevance: entry.relevance || 'Not assessed',
+    verificationStatus: 'Not independently verified by this action',
+  };
+}
+
 function createEvidenceRegister(context = {}) {
   const entries = context.entries ?? [];
   if (!Array.isArray(entries)) {
@@ -78,28 +102,71 @@ function createEvidenceRegister(context = {}) {
     subject: 'Creator Alliance Networks Pty Ltd',
     allowedSources: ['user-provided material', 'independently verifiable public sources'],
     assessmentLimit: 'This action records supplied information; it does not independently verify sources or claims.',
-    entries: entries.map((entry) => {
-      if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-        throw new Error('Each evidence register entry must be an object');
-      }
-      if (!['user-provided', 'public-source'].includes(entry.sourceType)) {
-        throw new Error('Each evidence register entry must identify a user-provided or public source');
-      }
+    entries: entries.map(validateEvidenceEntry),
+  };
+}
 
-      return {
-        sourceType: entry.sourceType,
-        date: entry.date || 'Not supplied',
-        source: entry.source || 'Not supplied',
-        fileOrScreenshotName: entry.fileOrScreenshotName || 'Not supplied',
-        exactFactualClaim: entry.exactFactualClaim || 'Not supplied',
-        whatEvidenceProves: entry.whatEvidenceProves || 'Not assessed',
-        whatRemainsUnverified: entry.whatRemainsUnverified || 'Not assessed',
-        tikTokStatementCompared: entry.tikTokStatementCompared || 'No prior TikTok statement supplied for comparison',
-        contradictionWithTikTok: entry.contradictionWithTikTok || 'Not assessed',
-        relevance: entry.relevance || 'Not assessed',
-        verificationStatus: 'Not independently verified by this action',
-      };
-    }),
+function addToEvidenceChain(context = {}) {
+  const registerLike = context.register ?? context.chain ?? {};
+  const baseEntries = Array.isArray(registerLike.entries)
+    ? registerLike.entries
+    : Array.isArray(registerLike) ? registerLike : [];
+
+  const candidateCollections = [
+    context.previousEvidence,
+    context.previousEntries,
+    context.entries,
+    context.evidence,
+    context.entry,
+    context.newEvidence,
+    context.additions,
+    context.currentEvidence,
+  ];
+
+  const additions = [];
+  const pushCandidates = (value) => {
+    if (value === null || value === undefined) {
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => pushCandidates(item));
+      return;
+    }
+    if (typeof value === 'object') {
+      if (Array.isArray(value.entries)) {
+        value.entries.forEach((item) => additions.push(item));
+      }
+      if (Array.isArray(value.evidence)) {
+        value.evidence.forEach((item) => additions.push(item));
+      }
+      if (Array.isArray(value.previousEvidence)) {
+        value.previousEvidence.forEach((item) => additions.push(item));
+      }
+      if (Array.isArray(value.previousEntries)) {
+        value.previousEntries.forEach((item) => additions.push(item));
+      }
+      if (value.sourceType || value.exactFactualClaim || value.fileOrScreenshotName) {
+        additions.push(value);
+      }
+      return;
+    }
+    throw new Error('Evidence chain update requires evidence entries, not a scalar value');
+  };
+
+  candidateCollections.forEach(pushCandidates);
+
+  if (additions.length === 0) {
+    throw new Error('Evidence chain update requires at least one entry');
+  }
+
+  const nextEntries = [...baseEntries, ...additions.map(validateEvidenceEntry)];
+  return {
+    subject: 'Creator Alliance Networks Pty Ltd',
+    allowedSources: ['user-provided material', 'independently verifiable public sources'],
+    assessmentLimit: 'This action records supplied information; it does not independently verify sources or claims.',
+    entries: nextEntries,
+    chainLength: nextEntries.length,
+    chainStatus: 'Evidence recorded; not independently verified by this action',
   };
 }
 
@@ -170,6 +237,13 @@ export function createOpenclawPlugin(deps) {
             action,
             status: 'ready',
             register: createEvidenceRegister(context),
+          };
+        case 'add-to-evidence-chain':
+          return {
+            platform: 'openclaw',
+            action,
+            status: 'ready',
+            register: addToEvidenceChain(context),
           };
         case 'grant-ai-solutions-permissions':
           return {
