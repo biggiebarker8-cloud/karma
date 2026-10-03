@@ -16,6 +16,9 @@ This repository now includes a foundation for:
 - Read-only GitHub repository access for repository metadata, files, and code search
 - Separate Karma and GPT-powered Collaborator profiles, bounded Together replies, and approval-gated tool execution
 
+See [Memory Governance](MEMORY_GOVERNANCE.md) for principles that guide
+interpretation of existing assistant memory without changing runtime behavior.
+
 ## ChatGPT setup
 
 The assistant can use OpenAI GPT models through the server-side model transport. Set
