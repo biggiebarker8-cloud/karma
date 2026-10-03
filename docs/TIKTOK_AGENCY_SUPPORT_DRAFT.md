@@ -22,6 +22,7 @@ I have records of the steps, requests, and changing requirements. To make the hi
 8. **Reports and support follow-ups** — [dates; ASIC or other report references and TikTok ticket messages]
 9. **New TikTok support request** — [submission date/time and ticket/reference number not supplied]; the support flow showed **Account** as the issue type and confirmed “Support request sent.” The request said: “I just want to honestly know what will it take for you to follow your word and do right thing by Md without going any other routes they”. A follow-up message explained that I want to start a genuine, creator-focused agency, said I had followed the requested steps, and asked for assistance and support. The status shown is **In review**; TikTok said a reply may take a few hours. No reply is included in the material provided so far.
 10. **Supplementary scam and platform-conduct report** — [date supplied not specified]; full user-provided draft is preserved below. It describes alleged recruitment and impersonation, claimed losses, disputed TikTok verification/support actions, and evidence the author says is available. The assertions and listed evidence have not been independently reviewed here. Before external use, verify the company ABN: this supplied report says **55 700 905 152**, while the existing agency setup notes in this project list **55 700 905 157**.
+11. **TikTok LIVE/Creator Network support conversation** — user-supplied transcript covering September 8–10, 2026, followed by messages identified only as “Saturday,” “Tuesday,” and “yesterday” (absolute dates not established). Summary and notable response sequence are below. Claims are recorded as the user's account, not as independently verified findings. The current status shown with the transcript is **In review**; TikTok says a reply may take a few hours.
 
 ## Supplementary report draft (as supplied)
 
@@ -71,6 +72,22 @@ I sent TikTok a formal written complaint (Sept 7, 2026) and a final written dema
 - ASIC confirmation correspondence
 
 I am seeking this matter to be formally investigated as both an individual scam and a possible broader pattern affecting other creators/agencies attempting to verify through TikTok's Business Centre.
+
+## TikTok LIVE/Creator Network support conversation (user-supplied summary)
+
+- **September 8, 6:57 PM:** The user said they believed there were only three legitimate Australian agencies and felt they had met the requirements without receiving fair treatment. TikTok Support confirmed receipt and said the request was under review.
+- **September 8, 7:03 PM:** TikTok Support asked for the Creator Network name or ID, the ineligibility reason shown, and a screenshot if available.
+- **September 8, 7:18–7:55 PM:** The user disputed the document requirements, saying they had first been told a sole-trader business was sufficient, then instructed to obtain a company, and that the requirements kept changing. The user cited costs of $340 and $1,050, repeated applications, ASIC guidance, and requested fair compensation. Support asked whether the issue was joining an existing network or applying to become one, and requested screenshots; the distinction was asked more than once.
+- **September 8, 8:05–9:34 PM:** The user said they could provide a video showing repeated declines. Support then sent instructions to download Lark rather than Feishu. The user replied that they already had Lark Pro.
+- **September 8, 9:47 PM–September 9, 11:56 PM:** The user asked whether fair recognition or compensation was available. Support asked for details about advertising-credit/creator-coin issues, dates, and related tickets/screenshots. The user replied that they had already sent the available material and were tired of repeating it.
+- **September 10, 1:15–3:56 PM:** Support requested another detailed description and evidence, then said the application would be reviewed and could take up to 10 business days. The user said they had escalated or intended to escalate concerns to ASIC, ICAC, and media outlets.
+- **September 10, 4:02 PM:** The user said the matter began July 26, when they say they were directed to register as a sole trader for $340, and that on July 29 they were told to obtain a company for $1,050. The user described further application declines and equipment/software spending. This is the user's account; supporting dated messages and receipts should be attached separately.
+- **September 10, 8:58 PM:** Support said the case would be transferred to a specialised agent.
+- **Later messages (shown only as Saturday 5:53 PM, Tuesday 6:14 PM, and “yesterday” 6:02 PM):** The user asked TikTok to state its intended resolution and then made a formal compensation demand of **$14,090** with a 24-hour response deadline. The supplied breakdown lists $340, $1,050, $3,000 in computer costs, and $9,200 for two months of lost income/stress; those amounts total **$13,590**, so the $500 difference needs clarification before the demand is reused. The user then reported being locked out of Business Centre and described that as further evidence of misconduct. The transcript ends with the case marked **In review** and a reply expected within a few hours. Obtain the original message timestamps to replace the relative-date labels.
+
+The supplied transcript also contains sensitive personal-health details. They are not reproduced in this repository copy; retain the unredacted original securely and share it only through an appropriate, trusted channel if needed.
+
+## Original support request draft
 
 I’m concerned that someone using an email address that appeared to be associated with ByteDance may have obtained my information. I can provide the relevant message and report references for review. Please tell me the secure, official way to submit any sensitive documents; I will not include identity documents or reference numbers in this message.
 
