@@ -4,6 +4,7 @@ export function createClaudeTransport({
   apiKey = process.env.ANTHROPIC_API_KEY,
   fetchImpl = globalThis.fetch,
   endpoint = DEFAULT_ENDPOINT,
+  timeoutMs = 30_000,
 } = {}) {
   if (!apiKey) {
     throw new Error('Claude transport requires ANTHROPIC_API_KEY');
@@ -20,6 +21,7 @@ export function createClaudeTransport({
         'content-type': 'application/json',
         'x-api-key': apiKey,
       },
+      signal: AbortSignal.timeout(timeoutMs),
       body: JSON.stringify({
         model,
         max_tokens: 4096,
@@ -35,9 +37,14 @@ export function createClaudeTransport({
     }
 
     const payload = await response.json();
-    const content = payload?.content?.[0]?.text;
-    if (typeof content !== 'string') {
-      throw new Error('Claude response did not contain message content');
+    const content = Array.isArray(payload?.content)
+      ? payload.content
+        .filter((block) => typeof block?.text === 'string')
+        .map((block) => block.text)
+        .join('')
+      : '';
+    if (!content.trim()) {
+      throw new Error('Claude response did not contain non-empty message content');
     }
     return content;
   };

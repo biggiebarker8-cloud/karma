@@ -6,7 +6,7 @@ This repository now includes a foundation for:
 - Claude model gateway with strict JSON mode and schema validation
 - Voice/hearing adapters and turn controls (pause, interrupt, confirm)
 - Vision adapter with multi-format image normalization and validation
-- Integration plugin connectors for Openclaw, TikTok, Facebook, Instagram, Shopify, Amazon, and Canva
+- Permission-gated plugin scaffolds for TikTok, Facebook, Instagram, Shopify, Amazon, Canva, and Openclaw; these are not live provider connections
 - Microsoft hub capability with curated Copilot, business, cloud, developer/visual suite, product, offer, partner, contact, learning, and Apple-friendly pages
 - Creative plugins for hoodie design, comics, and movie clip workflows
 - Cross-device desktop install advisor and install plugin for iOS/Android/desktop paths
@@ -28,10 +28,20 @@ include `gpt-5` and `gpt-5-mini`.
 
 ## GitHub repository setup
 
-The GitHub connector is read-only and permission-gated. Set `GITHUB_TOKEN` only in
-the server environment, grant the assistant `github:read`, and enable
-`githubEnabled`. Use a fine-grained token limited to the repositories it should
-help with; never expose the token in browser code or client configuration.
+The GitHub connector is read-only and permission-gated. Set `GITHUB_TOKEN` and
+`GITHUB_ALLOWED_REPOSITORIES` only in the server environment, grant the assistant
+`github:read`, and enable `githubEnabled`. The allowlist is a comma-separated
+list of exact `owner/repository` names; reads outside that list fail closed.
+Use a fine-grained token limited to those repositories and the minimum read
+permissions required; never expose the token in browser code or client
+configuration. Pagination is bounded to 1–100 results per page. Mocked transport
+tests do not establish live GitHub access.
+
+OpenAI and Anthropic model transports use server-side API keys and enforce a
+request timeout. They validate that a response contains non-empty text. They do
+not automatically retry billable model POSTs, because a timed-out request may
+already have been processed and retrying could duplicate charges. Live provider
+access is not established by mocked tests.
 
 ## Two-assistant runtime
 
@@ -101,12 +111,14 @@ This does not import ChatGPT's private memory or transfer an existing assistant.
 
 ## Notes
 
-- Integrations are scaffolded as safe plugin connectors with permission gates, audit logging, and rate limiting.
+- TikTok, Facebook, Instagram, Shopify, Amazon, Canva, and Openclaw are scaffolds/planning actions, not authenticated provider integrations. GitHub has an authenticated read-only transport when configured, but live access must be verified separately.
 - Openclaw is registered as its own assistant integration with a dedicated feature flag and permission so it can stay separate from other AI or agency-specific tooling.
 - Openclaw exposes standalone app planning, agency workspace setup, TikTok dashboard setup, an evidence-register action, AI permissions handoff, and Larks documentation handoff actions so it can support an agency launch without being coupled into Larks.
 - Agency and TikTok dashboard plans identify Creator Alliance Networks Pty Ltd as the Australian entity and use `creativealliancenetwork.com` as the project domain. Goated Guardians is kept as a separate, unverified project name; no relationship to `creatoralliance.org` or the Caribbean “Creators Alliance” is asserted.
 - The evidence register starts empty and accepts user-provided material or public-source entries. It records exact claims, what is established or unverified, TikTok statement comparisons, relevance, and source filenames; the action does not independently verify material or infer intent or wrongdoing.
+- TikTok tool execution requires `post:tiktok`; action names or operation contexts indicating writes, publishing, spending, account changes, or administration additionally require exact owner approval. This permission does not create a TikTok API connection.
 - Creative and vision capabilities are dependency-injected so production analyzers/providers can be wired safely.
 - Network/OAuth-specific implementations are intentionally dependency-injected for secure wiring in app-specific runtime code.
+- See [Integration implementation roadmap](INTEGRATION_ROADMAP.md) for current verified status, server configuration, missing provider work, approval gates, and real-call completion criteria. No provider is marked complete based on documentation or mocks.
 - iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install, while still exposing Apple App Store and Google Play links together when configured.
 - The Microsoft hub acts as a curated Microsoft knowledge base, including Copilot, business, cloud, contact/support, and developer/visual suite sections plus official Microsoft links and Apple-friendly web-first guidance for iPhone, iPad, and Mac users.

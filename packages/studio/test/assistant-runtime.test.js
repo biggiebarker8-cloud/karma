@@ -165,6 +165,38 @@ test('Claude transport uses its API key and returns message content', async () =
   assert.equal(await claude({ model: 'claude-sonnet-5', prompt: 'Hello' }), 'claude response');
   assert.equal(JSON.parse(claudeRequest.options.body).messages[0].role, 'user');
   assert.equal(claudeRequest.options.headers['x-api-key'], 'claude-test-key');
+  assert.ok(claudeRequest.options.signal instanceof AbortSignal);
+});
+
+test('Claude transport rejects empty responses and times out stalled requests', async () => {
+  const emptyResponse = createClaudeTransport({
+    apiKey: 'test-key',
+    fetchImpl: async () => ({
+      ok: true,
+      async json() { return { content: [{ type: 'tool_use' }] }; },
+    }),
+  });
+  await assert.rejects(
+    () => emptyResponse({ model: 'claude-sonnet-5', prompt: 'Hello' }),
+    /non-empty message content/,
+  );
+
+  const stalledRequest = createClaudeTransport({
+    apiKey: 'test-key',
+    timeoutMs: 1,
+    fetchImpl: async (_url, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+    }),
+  });
+  const keepEventLoopAlive = setTimeout(() => {}, 100);
+  try {
+    await assert.rejects(
+      () => stalledRequest({ model: 'claude-sonnet-5', prompt: 'Hello' }),
+      { name: 'TimeoutError' },
+    );
+  } finally {
+    clearTimeout(keepEventLoopAlive);
+  }
 });
 
 test('Claude requests fail clearly without a Claude transport', async () => {
@@ -196,10 +228,42 @@ test('OpenAI transport sends a server-side key and returns chat content', async 
   assert.equal(result, 'Hello from GPT');
   assert.equal(request.options.headers.authorization.startsWith('Bearer '), true);
   assert.equal(request.options.headers.authorization.endsWith('test-key'), true);
+  assert.ok(request.options.signal instanceof AbortSignal);
   assert.deepStrictEqual(JSON.parse(request.options.body), {
     model: 'gpt-5',
     messages: [{ role: 'user', content: 'Help me build' }],
   });
+});
+
+test('OpenAI transport rejects empty responses and times out stalled requests', async () => {
+  const emptyResponse = createOpenAITransport({
+    apiKey: 'test-key',
+    fetchImpl: async () => ({
+      ok: true,
+      async json() { return { choices: [{ message: { content: '  ' } }] }; },
+    }),
+  });
+  await assert.rejects(
+    () => emptyResponse({ model: 'gpt-5', prompt: 'Hello' }),
+    /non-empty message content/,
+  );
+
+  const stalledRequest = createOpenAITransport({
+    apiKey: 'test-key',
+    timeoutMs: 1,
+    fetchImpl: async (_url, { signal }) => new Promise((resolve, reject) => {
+      signal.addEventListener('abort', () => reject(signal.reason), { once: true });
+    }),
+  });
+  const keepEventLoopAlive = setTimeout(() => {}, 100);
+  try {
+    await assert.rejects(
+      () => stalledRequest({ model: 'gpt-5', prompt: 'Hello' }),
+      { name: 'TimeoutError' },
+    );
+  } finally {
+    clearTimeout(keepEventLoopAlive);
+  }
 });
 
 test('OpenAI transport requests JSON mode and reports API errors', async () => {
@@ -231,6 +295,7 @@ test('GitHub transport reads repository data with a server-side token', async ()
   const transport = createGitHubTransport({
     token: 'test-token',
     endpoint: 'https://github.test',
+    allowedRepositories: ['owner/repo'],
     fetchImpl: async (url, options) => {
       request = { url: String(url), options };
       return { ok: true, async json() { return { full_name: 'owner/repo' }; } };
@@ -244,10 +309,29 @@ test('GitHub transport reads repository data with a server-side token', async ()
   assert.equal(request.options.headers.authorization.startsWith('Bearer '), true);
 });
 
+test('GitHub transport rejects repositories outside its explicit allowlist', async () => {
+  let requests = 0;
+  const transport = createGitHubTransport({
+    token: 'test-token',
+    allowedRepositories: ['owner/approved'],
+    fetchImpl: async () => {
+      requests += 1;
+      return { ok: true, async json() { return {}; } };
+    },
+  });
+
+  await assert.rejects(
+    () => transport({ owner: 'owner', repo: 'private' }),
+    /repository is not allowlisted/,
+  );
+  assert.equal(requests, 0);
+});
+
 test('GitHub repository plugin exposes read-only actions through the runtime', async () => {
   const runtime = canonicalRuntime({
     modelTransport: async () => 'ok',
     permissions: [PERMISSIONS.GITHUB_READ],
+    githubAllowedRepositories: ['owner/repo'],
     githubTransport: async ({ path }) => ({ path }),
   });
 
@@ -261,12 +345,58 @@ test('GitHub repository plugin exposes read-only actions through the runtime', a
   assert.equal(runtime.pluginRegistry.isAvailable('github'), true);
 });
 
+test('GitHub repository plugin enforces its allowlist and bounded pagination', async () => {
+  const runtime = canonicalRuntime({
+    modelTransport: async () => 'ok',
+    permissions: [PERMISSIONS.GITHUB_READ],
+    githubAllowedRepositories: ['owner/repo'],
+    githubTransport: async (request) => request,
+  });
+
+  await assert.rejects(
+    () => runtime.pluginRegistry.execute('github', 'get-repository', { owner: 'owner', repo: 'other' }),
+    /repository is not allowlisted/,
+  );
+  await assert.rejects(
+    () => runtime.pluginRegistry.execute('github', 'search-code', {
+      owner: 'owner',
+      repo: 'repo',
+      query: 'test',
+      perPage: 101,
+    }),
+    /pagination requires/,
+  );
+  const result = await runtime.pluginRegistry.execute('github', 'search-code', {
+    owner: 'owner',
+    repo: 'repo',
+    query: 'test',
+    page: 2,
+    perPage: 50,
+  });
+  assert.equal(result.query.page, 2);
+  assert.equal(result.query.per_page, 50);
+});
+
 test('GitHub access is unavailable without the read permission', async () => {
   const runtime = createRuntime([]);
 
   await assert.rejects(
     () => runtime.pluginRegistry.execute('github', 'get-repository', { owner: 'owner', repo: 'repo' }),
     (error) => error.code === 'PLUGIN_UNAVAILABLE',
+  );
+});
+
+test('TikTok actions require post permission and sensitive TikTok writes require owner approval', async () => {
+  const noPermission = createRuntime([]);
+  await assert.rejects(
+    () => noPermission.pluginRegistry.execute('tiktok', 'publish-post', {}),
+    (error) => error.code === 'PLUGIN_UNAVAILABLE',
+  );
+
+  const runtime = createRuntime([PERMISSIONS.POST_TIKTOK]);
+  await assert.rejects(
+    () => runtime.pluginRegistry.execute('tiktok', 'publish-post', {}),
+    (error) => error.code === 'ACTION_APPROVAL_REQUIRED',
   );
 });
 
@@ -516,6 +646,25 @@ test('publishing, deletion, and account changes each require their own approval'
     );
   }
   assert.equal(executions, 0);
+});
+
+test('write, spend, and admin operations all require owner approval', async () => {
+  const runtime = createRuntime([]);
+  runtime.pluginRegistry.register({
+    id: 'provider',
+    async execute() {},
+  });
+
+  for (const [action, context] of [
+    ['update-product', {}],
+    ['perform-operation', { operation: 'spend' }],
+    ['manage-tenant', { operation: 'administer' }],
+  ]) {
+    await assert.rejects(
+      () => runtime.assistantProfiles.executeTool('karma', 'provider', action, context),
+      (error) => error.code === 'ACTION_APPROVAL_REQUIRED',
+    );
+  }
 });
 
 test('assistant HTTP API uses authenticated server identity for fact reviews and action approvals', async () => {

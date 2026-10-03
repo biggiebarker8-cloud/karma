@@ -57,6 +57,12 @@ The Render Blueprint generates `SESSION_SECRET` and prompts you to supply:
 Never commit or paste API keys into source code, deployment files, browser
 configuration, or chat. The app requires both model credentials at startup.
 
+GitHub repository reads are optional. If enabled, set `GITHUB_TOKEN` and
+`GITHUB_ALLOWED_REPOSITORIES` as server-side environment variables. The latter
+must be a comma-separated allowlist of exact `owner/repository` names. Requests
+for repositories outside that list are denied. Never configure a broad token
+when a repository-scoped fine-grained token will work.
+
 The Blueprint also sets `NODE_ENV=production`, `HOST=0.0.0.0`,
 `DATABASE_PATH=/var/data/assistant.sqlite`, and `COOKIE_SECURE=true`. Render
 sets `PORT`. After Render assigns the service URL, set `PUBLIC_ORIGIN` in the

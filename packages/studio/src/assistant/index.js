@@ -45,6 +45,7 @@ export function createAssistantRuntime({
   installLinks = {},
   claudeTransport,
   githubTransport,
+  githubAllowedRepositories = process.env.GITHUB_ALLOWED_REPOSITORIES?.split(',') ?? [],
   sharedBusinessKnowledge = [],
   authorizeDanAction = () => false,
   memoryStore: configuredMemoryStore,
@@ -102,6 +103,7 @@ export function createAssistantRuntime({
     createGitHubPlugin({
       ...pluginDeps,
       githubTransport: configuredGitHubTransport,
+      allowedRepositories: githubAllowedRepositories,
     }),
   ].forEach((plugin) => pluginRegistry.register(plugin));
 
