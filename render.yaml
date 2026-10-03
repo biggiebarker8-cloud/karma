@@ -2,7 +2,7 @@ services:
   - type: web
     name: karma-assistant
     runtime: node
-    plan: starter
+    plan: free
     rootDir: packages/studio
     buildCommand: npm install
     startCommand: npm start
