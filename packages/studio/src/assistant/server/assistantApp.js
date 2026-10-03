@@ -9,6 +9,31 @@ import { createSessionAuth, isSameOriginRequest } from './sessionAuth.js';
 const HTML_PATH = fileURLToPath(new URL('../../../public/index.html', import.meta.url));
 const SCRIPT_PATH = fileURLToPath(new URL('../../../public/app.js', import.meta.url));
 const STYLES_PATH = fileURLToPath(new URL('../../../public/app.css', import.meta.url));
+const STATIC_ASSETS = new Map([
+  ['/', [HTML_PATH, 'text/html; charset=utf-8']],
+  ['/app.js', [SCRIPT_PATH, 'text/javascript; charset=utf-8']],
+  ['/app.css', [STYLES_PATH, 'text/css; charset=utf-8']],
+  ['/manifest.webmanifest', [
+    fileURLToPath(new URL('../../../public/manifest.webmanifest', import.meta.url)),
+    'application/manifest+json; charset=utf-8',
+  ]],
+  ['/service-worker.js', [
+    fileURLToPath(new URL('../../../public/service-worker.js', import.meta.url)),
+    'text/javascript; charset=utf-8',
+  ]],
+  ['/icons/apple-touch-icon.png', [
+    fileURLToPath(new URL('../../../public/icons/apple-touch-icon.png', import.meta.url)),
+    'image/png',
+  ]],
+  ['/icons/icon-192.png', [
+    fileURLToPath(new URL('../../../public/icons/icon-192.png', import.meta.url)),
+    'image/png',
+  ]],
+  ['/icons/icon-512.png', [
+    fileURLToPath(new URL('../../../public/icons/icon-512.png', import.meta.url)),
+    'image/png',
+  ]],
+]);
 const MAX_BODY_BYTES = 64 * 1024;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LOGIN_ATTEMPT_LIMIT = 5;
@@ -131,16 +156,9 @@ export function createAssistantApp({
         const url = new URL(request.url ?? '/', `http://${request.headers.host ?? 'localhost'}`);
         const expectedOrigin = configuredOrigin
           ?? `${request.socket.encrypted ? 'https' : 'http'}://${request.headers.host ?? 'localhost'}`;
-        if (request.method === 'GET' && url.pathname === '/') {
-          await sendFile(response, HTML_PATH, 'text/html; charset=utf-8');
-          return;
-        }
-        if (request.method === 'GET' && url.pathname === '/app.js') {
-          await sendFile(response, SCRIPT_PATH, 'text/javascript; charset=utf-8');
-          return;
-        }
-        if (request.method === 'GET' && url.pathname === '/app.css') {
-          await sendFile(response, STYLES_PATH, 'text/css; charset=utf-8');
+        const asset = STATIC_ASSETS.get(url.pathname);
+        if (request.method === 'GET' && asset) {
+          await sendFile(response, ...asset);
           return;
         }
         if (url.pathname === '/api/login' && request.method === 'POST') {

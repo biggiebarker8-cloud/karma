@@ -28,6 +28,21 @@ secret.
   approvals persist in SQLite. The SQLite `-wal` and `-shm` files are created
   beside the database and therefore also reside on the disk.
 
+## Mobile web app
+
+The service serves the installable web app at its HTTPS root URL. Safari on
+iPhone can add it to the Home Screen from **Share → Add to Home Screen**; the
+manifest and Apple touch icon provide the app name, icon, and standalone
+presentation. The service worker caches only the public interface shell and
+never intercepts `/api/` requests. Authentication, model calls, permissions,
+tools, and memory remain in the server/API and SQLite database; the browser does
+not store model credentials or canon data in the app shell. This keeps the
+frontend transport separate from the assistant runtime and persistent backend.
+
+Use the canonical HTTPS service URL (or custom domain) for both Safari and
+Home Screen installation. The service worker and secure session cookie require
+a secure context; local development can use `localhost`.
+
 ## Required environment
 
 The Render Blueprint generates `SESSION_SECRET` and prompts you to supply:
