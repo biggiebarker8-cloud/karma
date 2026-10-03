@@ -103,8 +103,9 @@ This does not import ChatGPT's private memory or transfer an existing assistant.
 
 - Integrations are scaffolded as safe plugin connectors with permission gates, audit logging, and rate limiting.
 - Openclaw is registered as its own assistant integration with a dedicated feature flag and permission so it can stay separate from other AI or agency-specific tooling.
-- Openclaw exposes standalone app planning, agency workspace setup, TikTok dashboard setup, AI permissions handoff, and Larks documentation handoff actions so it can support an agency launch without being coupled into Larks.
+- Openclaw exposes standalone app planning, agency workspace setup, TikTok dashboard setup, an evidence-register action, AI permissions handoff, and Larks documentation handoff actions so it can support an agency launch without being coupled into Larks.
 - Agency and TikTok dashboard plans identify Creator Alliance Networks Pty Ltd as the Australian entity and use `creativealliancenetwork.com` as the project domain. Goated Guardians is kept as a separate, unverified project name; no relationship to `creatoralliance.org` or the Caribbean “Creators Alliance” is asserted.
+- The evidence register starts empty and accepts user-provided material or public-source entries. It records exact claims, what is established or unverified, TikTok statement comparisons, relevance, and source filenames; the action does not independently verify material or infer intent or wrongdoing.
 - Creative and vision capabilities are dependency-injected so production analyzers/providers can be wired safely.
 - Network/OAuth-specific implementations are intentionally dependency-injected for secure wiring in app-specific runtime code.
 - iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install, while still exposing Apple App Store and Google Play links together when configured.

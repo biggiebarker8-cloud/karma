@@ -59,6 +59,63 @@ test('agency and TikTok dashboard plans preserve the supplied organization disti
   }
 });
 
+test('evidence register records only supplied material and labels unverified assessments', async () => {
+  const runtime = createRuntime([PERMISSIONS.OPENCLAW_MANAGE]);
+  const result = await runtime.pluginRegistry.execute('openclaw', 'create-evidence-register', {
+    entries: [{
+      sourceType: 'public-source',
+      date: '2026-10-01',
+      source: 'Public company register',
+      fileOrScreenshotName: 'company-record.pdf',
+      exactFactualClaim: 'The record lists the company as active.',
+      whatEvidenceProves: 'The supplied record displays active status.',
+      whatRemainsUnverified: 'Whether TikTok has an agency relationship with the company.',
+      tikTokStatementCompared: 'No statement provided.',
+      contradictionWithTikTok: 'No contradiction assessed.',
+      relevance: 'May help establish the company identity.',
+    }],
+  });
+
+  assert.equal(result.register.subject, 'Creator Alliance Networks Pty Ltd');
+  assert.deepEqual(result.register.allowedSources, [
+    'user-provided material',
+    'independently verifiable public sources',
+  ]);
+  assert.equal(
+    result.register.assessmentLimit,
+    'This action records supplied information; it does not independently verify sources or claims.',
+  );
+  assert.deepEqual(result.register.entries[0], {
+    sourceType: 'public-source',
+    date: '2026-10-01',
+    source: 'Public company register',
+    fileOrScreenshotName: 'company-record.pdf',
+    exactFactualClaim: 'The record lists the company as active.',
+    whatEvidenceProves: 'The supplied record displays active status.',
+    whatRemainsUnverified: 'Whether TikTok has an agency relationship with the company.',
+    tikTokStatementCompared: 'No statement provided.',
+    contradictionWithTikTok: 'No contradiction assessed.',
+    relevance: 'May help establish the company identity.',
+    verificationStatus: 'Not independently verified by this action',
+  });
+});
+
+test('evidence register starts empty and rejects entries without source provenance', async () => {
+  const runtime = createRuntime([PERMISSIONS.OPENCLAW_MANAGE]);
+  const { register } = await runtime.pluginRegistry.execute(
+    'openclaw',
+    'create-evidence-register',
+  );
+
+  assert.deepEqual(register.entries, []);
+  await assert.rejects(
+    () => runtime.pluginRegistry.execute('openclaw', 'create-evidence-register', {
+      entries: [{ exactFactualClaim: 'Unsupported claim' }],
+    }),
+    /must identify a user-provided or public source/,
+  );
+});
+
 test('model gateway defaults to an OpenAI model', async () => {
   let request;
   const gateway = createModelGateway({
