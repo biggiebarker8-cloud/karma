@@ -20,6 +20,7 @@ function normalizePermissionList(permissions) {
 
 function getStandaloneAppConfig(context = {}) {
   return {
+    executed: false,
     appId: context.appId || 'openclaw',
     mode: 'standalone',
     separatedFrom: ['larks', 'assistant-runtime-defaults'],
@@ -30,6 +31,8 @@ function getStandaloneAppConfig(context = {}) {
 
 function getAgencyWorkspacePlan(context = {}) {
   return {
+    executed: false,
+    requiresConnection: true,
     workspace: context.workspace || 'agency',
     areas: ['client-onboarding', 'content-operations', 'reporting', 'approvals'],
     recommendedIntegrations: ['openclaw', 'tiktok', 'canva', 'shopify', 'amazon'],
@@ -39,27 +42,33 @@ function getAgencyWorkspacePlan(context = {}) {
 
 function getTikTokDashboardPlan(context = {}) {
   return {
+    executed: false,
+    requiresConnection: true,
     dashboardId: context.dashboardId || 'tiktok-operations',
     sections: ['campaign-overview', 'content-calendar', 'engagement-signals', 'handoff-notes'],
-    automationReady: true,
+    automationReady: false,
     documentationReady: true,
   };
 }
 
 function grantAiSolutionsPermissions(context = {}) {
-  const grantedPermissions = normalizePermissionList(context.permissions);
+  const requestedPermissions = normalizePermissionList(context.permissions);
 
   return {
     target: context.target || 'ai-solutions-constant',
     grantedBy: context.grantedBy || 'openclaw',
-    grantedPermissions,
-    granted: grantedPermissions.length > 0,
+    requestedPermissions,
+    grantedPermissions: [],
+    granted: false,
+    executed: false,
+    requiresConnection: true,
     documentationReady: true,
   };
 }
 
 function getLarksHandoff(context = {}) {
   return {
+    executed: false,
     handoffTarget: context.handoffTarget || 'larks',
     includeOpenclawSeparation: true,
     includeAgencyRunbook: true,
@@ -84,12 +93,14 @@ export function createOpenclawPlugin(deps) {
             supportsAgencyOperations: true,
             supportsTikTokDashboards: true,
             documentationReady: true,
+            executed: false,
             status: 'ready',
           };
         case 'get-standalone-app-config':
           return {
             platform: 'openclaw',
             action,
+            executed: false,
             status: 'ready',
             config: getStandaloneAppConfig(context),
           };
@@ -97,27 +108,34 @@ export function createOpenclawPlugin(deps) {
           return {
             platform: 'openclaw',
             action,
-            status: 'ready',
+            status: 'stubbed',
+            executed: false,
+            requiresConnection: true,
             workspace: getAgencyWorkspacePlan(context),
           };
         case 'setup-tiktok-dashboard':
           return {
             platform: 'openclaw',
             action,
-            status: 'ready',
+            status: 'stubbed',
+            executed: false,
+            requiresConnection: true,
             dashboard: getTikTokDashboardPlan(context),
           };
         case 'grant-ai-solutions-permissions':
           return {
             platform: 'openclaw',
             action,
-            status: 'ready',
+            status: 'stubbed',
+            executed: false,
+            requiresConnection: true,
             permissionGrant: grantAiSolutionsPermissions(context),
           };
         case 'document-larks-handoff':
           return {
             platform: 'openclaw',
             action,
+            executed: false,
             status: 'ready',
             handoff: getLarksHandoff(context),
           };

@@ -23,3 +23,44 @@ export function createScopedIntegrationPlugin({
   };
 }
 
+export function createScaffoldIntegrationPlugin({
+  id,
+  requiredPermissions,
+  actions,
+  capabilities = {},
+  ...deps
+}) {
+  const scaffold = { status: 'stubbed', executed: false, requiresConnection: true };
+  return createScopedIntegrationPlugin({
+    ...deps,
+    id,
+    requiredPermissions,
+    async actionHandler(action, context = {}) {
+      if (action === 'describe-capabilities') {
+        return {
+          ...capabilities,
+          platform: id,
+          supportedActions: ['describe-capabilities', ...Object.keys(actions)],
+          documentationReady: true,
+          ...scaffold,
+        };
+      }
+      const handler = Object.hasOwn(actions, action) ? actions[action] : null;
+      if (!handler) {
+        return { platform: id, action, context, ...scaffold };
+      }
+      const payload = handler(context);
+      for (const key of ['result', 'overview', 'profile']) {
+        if (payload[key]) {
+          payload[key] = {
+            ...payload[key],
+            executed: false,
+            requiresConnection: true,
+            documentationReady: true,
+          };
+        }
+      }
+      return { ...payload, platform: id, action, ...scaffold };
+    },
+  });
+}
