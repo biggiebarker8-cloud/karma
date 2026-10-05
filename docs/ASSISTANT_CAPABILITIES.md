@@ -7,11 +7,27 @@ This repository now includes a foundation for:
 - Voice/hearing adapters and turn controls (pause, interrupt, confirm)
 - Vision adapter with multi-format image normalization and validation
 - Integration plugin connectors for Openclaw, TikTok, Facebook, Instagram, Shopify, Amazon, and Canva
+- Microsoft hub capability with curated Copilot, business, cloud, developer/visual suite, product, offer, partner, contact, learning, and Apple-friendly pages
 - Creative plugins for hoodie design, comics, and movie clip workflows
 - Cross-device desktop install advisor and install plugin for iOS/Android/desktop paths
 - Memory scopes (session/user/task), tone profiles, and accessibility profiles
 - Continuous learning feedback capture
 - Internet reference retrieval with domain allowlisting and required citations
+- Read-only GitHub repository access for repository metadata, files, and code search
+
+## ChatGPT setup
+
+The assistant can use OpenAI GPT models through the server-side model transport. Set
+`OPENAI_API_KEY` in the server environment before creating the default runtime; never
+put this key in browser code or client-exposed configuration. Supported model names
+include `gpt-5` and `gpt-5-mini`.
+
+## GitHub repository setup
+
+The GitHub connector is read-only and permission-gated. Set `GITHUB_TOKEN` only in
+the server environment, grant the assistant `github:read`, and enable
+`githubEnabled`. Use a fine-grained token limited to the repositories it should
+help with; never expose the token in browser code or client configuration.
 
 ## Entry point
 
@@ -24,4 +40,5 @@ This repository now includes a foundation for:
 - Openclaw exposes standalone app planning, agency workspace setup, TikTok dashboard setup, AI permissions handoff, and Larks documentation handoff actions so it can support an agency launch without being coupled into Larks.
 - Creative and vision capabilities are dependency-injected so production analyzers/providers can be wired safely.
 - Network/OAuth-specific implementations are intentionally dependency-injected for secure wiring in app-specific runtime code.
-- iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install.
+- iOS is handled with explicit install guidance (Add to Home Screen) because browsers do not permit silent auto-install, while still exposing Apple App Store and Google Play links together when configured.
+- The Microsoft hub acts as a curated Microsoft knowledge base, including Copilot, business, cloud, contact/support, and developer/visual suite sections plus official Microsoft links and Apple-friendly web-first guidance for iPhone, iPad, and Mac users.

@@ -6,6 +6,7 @@ export const PERMISSIONS = {
   SHOPIFY_WRITE: 'shopify:write',
   AMAZON_WRITE: 'amazon:write',
   CANVA_WRITE: 'canva:write',
+  MICROSOFT_HUB_READ: 'microsoft-hub:read',
   INTERNET_READ: 'internet:read',
   MEMORY_WRITE: 'memory:write',
   VOICE_INPUT: 'voice:input',
@@ -15,6 +16,7 @@ export const PERMISSIONS = {
   DESIGN_COMICS: 'design:comics',
   EDIT_MOVIE_CLIPS: 'edit:movie-clips',
   INSTALL_GUIDE_READ: 'install-guide:read',
+  GITHUB_READ: 'github:read',
 };
 
 export function hasPermission(grantedPermissions = [], requiredPermission) {

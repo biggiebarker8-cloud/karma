@@ -1,6 +1,7 @@
 const DEFAULT_FLAGS = {
   pluginsEnabled: true,
   openclawEnabled: true,
+  microsoftHubEnabled: false,
   creativePluginsEnabled: true,
   installExperienceEnabled: true,
   jsonModeEnabled: true,
@@ -11,6 +12,7 @@ const DEFAULT_FLAGS = {
   continuousLearningEnabled: true,
   internetReferencesEnabled: true,
   accessibilityModeEnabled: true,
+  githubEnabled: true,
 };
 
 export function createFeatureFlags(overrides = {}) {
